@@ -1,3 +1,4 @@
+import { BadRequestError } from "../errors/BadRequestError";
 import { SalaryRange } from "../value-objects/Salary";
 
 export type JobStatus = 'active' | 'closed' | 'draft';
@@ -23,9 +24,54 @@ export interface IJobProps {
 
 export class Job {
   private _status: JobStatus
-  private _viewCount: number
+  private _viewsCount: number
 
-  constructor(private prop: IJobProps) {
-    
+  constructor(private props: IJobProps) {
+    if(!props.title && props.title.trim() === '') {
+      throw new BadRequestError('Title is required.')
+    };
+
+    if(!props.user_id) {
+      throw new BadRequestError('User id is required.')
+    };
+
+    this._status = props.status ?? 'active';
+    this._viewsCount = props.viewsCount ?? 0
   };
+
+  closed(): void {
+    if(this._status === 'closed') {
+      throw new BadRequestError('Vacancy is already closed.')
+    };
+    this._status = 'closed'
+  };
+
+  draft(): void {
+    if(this._status === 'closed') {
+      throw new BadRequestError('A closed vacancy cannot be moved to a draft.')
+    };
+  };
+
+  publish(): void {
+    if(this._status === 'closed') {
+      throw new BadRequestError('A closed vacancy cannot be republished.')
+    };
+  };
+
+  incrementViews(): void {
+    this._viewsCount += 1
+  };
+
+  get id() {return this.props.id};
+  get user_id() {return this.props.user_id}
+  get title() {return this.props.title}
+  get description() {return this.props.description}
+  get postType() {return this.props.postType}
+  get jobType() {return this.props.jobType}
+  get workFormat() {return this.props.workFormat}
+  get city() {return this.props.city}
+  get salaryRange() {return this.props.salaryRange}
+  get status() {return this.props.status}
+  get viewsCount() {return this.props.viewsCount}
+  get createdAt() {return this.props.createdAt}
 };
