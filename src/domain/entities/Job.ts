@@ -1,3 +1,4 @@
+import { SalaryRange } from "../value-objects/Salary";
 
 export type JobStatus = 'active' | 'closed' | 'draft';
 export type PostType = 'job' | 'resume';
@@ -14,9 +15,7 @@ export interface IJobProps {
   jobType: JobType
   workFormat: WorkFormat
   city?: string
-  salaryMin?: number
-  salaryMax?: number
-  currency: 
+  salaryRange?: SalaryRange
   status?: JobStatus
   viewsCount: number
   createdAt: Date 
@@ -27,6 +26,6 @@ export class Job {
   private _viewCount: number
 
   constructor(private prop: IJobProps) {
-
+    
   };
 };
