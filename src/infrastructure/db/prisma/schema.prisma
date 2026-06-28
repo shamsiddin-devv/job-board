@@ -1,0 +1,252 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ENUMS
+
+enum Role {
+  COMPANY
+  WORKER
+  ADMIN
+}
+
+enum OtpType {
+  EMAIL_VERIFY
+  PASSWORD_RESET
+}
+
+enum PostType {
+  JOB
+  RESUME
+}
+
+enum JobStatus {
+  ACTIVE
+  CLOSED
+  DRAFT
+}
+
+enum ApplicationStatus {
+  PENDING
+  REVIEWED
+  ACCEPTED
+  REJECTED
+}
+
+enum WorkFormat {
+  REMOTE
+  ONSITE
+  HYBRID
+}
+
+enum JobType {
+  FULL_TIME
+  PART_TIME
+  FREELANCE
+  INTERNSHIP
+}
+
+enum NotificationType {
+  APPLICATION_ACCEPTED
+  NEW_APPLICANT
+  JOB_EXPIRING
+}
+
+// USERS — hamma foydalanuvchilar
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String
+  name         String
+  phone        String?
+  role         Role     @default(WORKER)
+  avatarUrl    String?
+  isVerified   Boolean  @default(false)
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations
+  company       Company?
+  jobs          Job[]
+  resumes       Resume[]
+  applications  Application[]
+  savedJobs     SavedJob[]
+  notifications Notification[]
+  otpcodes      OtpCode[]
+
+  @@map("users")
+}
+
+// OTP - User verify
+
+model OtpCode {
+  id        String   @id @default(uuid())
+  user_id   String   @unique
+  code      Int
+  type      OtpType  @default(EMAIL_VERIFY)
+  expiresAt DateTime
+  isUsed    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  // Relations -> one-to-many -> OtpCode
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@map("otp_codes")
+}
+
+// COMPANIES — kompaniya profili
+
+model Company {
+  id          String   @id @default(uuid())
+  userId      String   @unique
+  name        String
+  description String?
+  website     String?
+  logoUrl     String?
+  industry    String?
+  size        String?
+  city        String?
+  isVerified  Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("companies")
+}
+
+// CATEGORIES — IT, Marketing, Design...
+
+model Category {
+  id   String  @id @default(uuid())
+  name String  @unique
+  slug String  @unique
+  icon String?
+
+  // Relations
+  jobCategories JobCategory[]
+
+  @@map("categories")
+}
+
+// JOBS — vakansiyalar VA worker postlari
+
+model Job {
+  id          String     @id @default(uuid())
+  ownerId     String
+  title       String
+  description String?
+  postType    PostType   @default(JOB)
+  jobType     JobType    @default(FULL_TIME)
+  workFormat  WorkFormat @default(ONSITE)
+  city        String?
+  salaryMin   Int?
+  salaryMax   Int?
+  currency    String     @default("UZS")
+  status      JobStatus  @default(ACTIVE)
+  viewsCount  Int        @default(0)
+  expiresAt   DateTime?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  // Relations
+  owner         User          @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  applications  Application[]
+  jobCategories JobCategory[]
+  savedBy       SavedJob[]
+
+  @@map("jobs")
+}
+
+// JOB_CATEGORIES — many-to-many: Job <-> Category
+
+model JobCategory {
+  jobId      String
+  categoryId String
+
+  job      Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  category Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@id([jobId, categoryId])
+  @@map("job_categories")
+}
+
+// APPLICATIONS — arizalar
+
+model Application {
+  id          String            @id @default(uuid())
+  jobId       String
+  applicantId String
+  coverLetter String?
+  resumeUrl   String?
+  status      ApplicationStatus @default(PENDING)
+  appliedAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  // Relations
+  job       Job  @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  applicant User @relation(fields: [applicantId], references: [id], onDelete: Cascade)
+
+  @@unique([jobId, applicantId])
+  @@map("applications")
+}
+
+// RESUMES — worker CV profili
+
+model Resume {
+  id        String    @id @default(uuid())
+  userId    String
+  title     String
+  summary   String?
+  city      String?
+  salaryMin Int?
+  currency  String    @default("UZS")
+  fileUrl   String?
+  status    JobStatus @default(ACTIVE)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("resumes")
+}
+
+// SAVED_JOBS — saqlangan vakansiyalar
+
+model SavedJob {
+  id      String   @id @default(uuid())
+  userId  String
+  jobId   String
+  savedAt DateTime @default(now())
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  job  Job  @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, jobId])
+  @@map("saved_jobs")
+}
+
+// NOTIFICATIONS — bildirishnomalar
+
+model Notification {
+  id        String           @id @default(uuid())
+  userId    String
+  type      NotificationType
+  message   String
+  isRead    Boolean          @default(false)
+  createdAt DateTime         @default(now())
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notifications")
+}
