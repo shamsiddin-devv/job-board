@@ -50,12 +50,14 @@ export class Job {
     if(this._status === 'closed') {
       throw new BadRequestError('A closed vacancy cannot be moved to a draft.')
     };
+    this._status = 'draft'
   };
 
   publish(): void {
     if(this._status === 'closed') {
       throw new BadRequestError('A closed vacancy cannot be republished.')
     };
+    this._status = 'active'
   };
 
   incrementViews(): void {
