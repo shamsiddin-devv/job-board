@@ -62,6 +62,6 @@ export class Company {
   get industry() {return this.props.industry}
   get size() {return this.props.size}
   get city() {return this.props.city}
-  get isVerified() {return this.props.isVerified}
+  get isVerified() {return this._isVerified}
   get createdAt() {return this.props.createdAt}
 };

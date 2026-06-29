@@ -65,7 +65,7 @@ export class User {
   get phone() {return this.props.phone}
   get role() {return this.props.role}
   get avatarUrl() {return this.props.avatarUrl}
-  get isVerified() {return this.props.isVerified}
-  get isAvtive() {return this.props.isActive}
+  get isVerified() {return this._isVerified}
+  get isAvtive() {return this._isActive}
   get createdAt() {return this.props.createdAt}
 };

@@ -71,7 +71,7 @@ export class Job {
   get workFormat() {return this.props.workFormat}
   get city() {return this.props.city}
   get salaryRange() {return this.props.salaryRange}
-  get status() {return this.props.status}
-  get viewsCount() {return this.props.viewsCount}
+  get status() {return this._status}
+  get viewsCount() {return this._viewsCount}
   get createdAt() {return this.props.createdAt}
 };
