@@ -1,6 +1,6 @@
 import { ConfigService } from "@nestjs/config";
 import {v2 as cloudinary} from "cloudinary";
-import { IStorageRepository, IUploadResult } from "src/domain/repositories/IStorageRepository";
+import { IStorageRepository, IUploadResult } from "src/domain/services/IStorageRepository";
 
 export class StorageCloudinary implements IStorageRepository {
   private readonly configService = new ConfigService();

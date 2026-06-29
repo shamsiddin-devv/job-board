@@ -1,6 +1,6 @@
 import { ConfigService } from "@nestjs/config";
 import nodemailer from "nodemailer"
-import { INodemailerRepository, IProp } from "src/domain/repositories/INodemailerRepository";
+import { INodemailerRepository, IProp } from "src/domain/services/INodemailerRepository";
 
 export class Nodemailer implements INodemailerRepository {
   private readonly configService = new ConfigService();
