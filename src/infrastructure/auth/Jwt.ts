@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-import { IJwtPayload, IJwtRepository } from "src/domain/services/IJwtRepository";
+import { IJwtPayload, IJwtRepository } from "src/domain/services/ITokenService";
 
 export class JsonWebToken implements IJwtRepository {
   private readonly ACCESS_SECRET = process.env.ACCESS_TOKEN_SECRET!

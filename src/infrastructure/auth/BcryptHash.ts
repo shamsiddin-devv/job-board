@@ -1,5 +1,5 @@
 import bcrypt from 'bcrypt';
-import { IHashRepository } from 'src/domain/services/IHashRepository';
+import { IHashRepository } from 'src/domain/services/IHashService';
 
 export class BcryptHash implements IHashRepository {
   private readonly SALT_ROUNDS = process.env.SALT_ROUNDS!;
