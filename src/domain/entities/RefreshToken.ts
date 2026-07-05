@@ -25,6 +25,14 @@ export class RefreshToken {
     this._isRevoked = this.props.isRevoked ?? false
   };
 
+  isExpired(): boolean {
+    return new Date() > this.props.expiresAt!
+  };
+
+  isValid(): boolean {
+    return !this.isExpired && !this._isRevoked
+  };
+
   revoke(): void {
     if(this._isRevoked) {
       throw new UnauthorizedError('Invalid refresh token.')
