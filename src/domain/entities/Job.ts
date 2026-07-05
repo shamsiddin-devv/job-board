@@ -9,7 +9,7 @@ export type CurrencyType = 'UZS' | 'USD'
 
 export interface IJobProps {
   id?: string
-  user_id: string
+  userId: string
   title: string
   description?: string
   postType: PostType
@@ -31,7 +31,7 @@ export class Job {
       throw new BadRequestError('Title is required.')
     };
 
-    if(!props.user_id) {
+    if(!props.userId) {
       throw new BadRequestError('User id is required.')
     };
 
@@ -65,7 +65,7 @@ export class Job {
   };
 
   get id() {return this.props.id};
-  get user_id() {return this.props.user_id}
+  get userId() {return this.props.userId}
   get title() {return this.props.title}
   get description() {return this.props.description}
   get postType() {return this.props.postType}
