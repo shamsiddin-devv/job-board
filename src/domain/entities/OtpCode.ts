@@ -43,4 +43,12 @@ export class OtpCode {
     };
     this._isUsed = true
   };
+
+  get id() {return this.props.id}
+  get userId() {return this.props.userId}
+  get code() {return this.props.code}
+  get type() {return this.props.type}
+  get expiresAt() {return this.props.expiresAt}
+  get isUsed() {return this._isUsed}
+  get createdAt() {return this.createdAt}
 }
