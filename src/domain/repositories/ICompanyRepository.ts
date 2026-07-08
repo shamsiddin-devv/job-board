@@ -1,9 +1,9 @@
 import { Company } from "../entities/Company";
 
 export interface ICompanyRepository {
-  findById(uuid: string): Promise<Company | void>
-  findByUserId(uuid: string): Promise<Company>
+  findById(companyId: string): Promise<Company | void>
+  findByUserId(userId: string): Promise<Company>
   findAll(): Promise<Company[]>
-  save(company: Company): Promise<Company>
-  delete(uuid: string): Promise<void>
+  save(data: Company): Promise<Company>
+  remove(companyId: string): Promise<void>
 };

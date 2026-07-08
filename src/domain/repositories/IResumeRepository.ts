@@ -1,9 +1,9 @@
 import { Resume } from "../entities/Resume";
 
 export interface IResumeRepository {
-  findById(uuid: string): Promise<Resume | void>
-  findByUserId(uuid: string): Promise<Resume>
+  findById(resumeId: string): Promise<Resume | void>
+  findByUserId(userId: string): Promise<Resume>
   findAll(): Promise<Resume[]>
-  save(resume: Resume): Promise<Resume>
-  delete(uuid: string): Promise<void>
+  save(data: Resume): Promise<Resume>
+  remove(resumeId: string): Promise<void>
 };
