@@ -3,9 +3,9 @@ import { Email } from "../value-objects/Email";
 
 
 export interface IUserRepository {
-  findById(userId: string): Promise<User | void>
-  findByEmail(email: Email): Promise<User>
+  findById(userId: string): Promise<User | null>
+  findByEmail(email: Email): Promise<User | null>
   findAll(): Promise<User[]>
-  save(data: User): Promise<User>
+  save(data: User, passwordHash?: string): Promise<User>
   remove(userId: string): Promise<void> 
 };
