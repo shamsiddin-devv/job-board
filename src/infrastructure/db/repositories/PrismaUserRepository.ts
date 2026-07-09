@@ -15,14 +15,14 @@ export class PrimsaUserRepository implements IUserRepository {
   };
 
   async findAll(): Promise<User[]> {
-    const rows = await this.prismaService.user.findMany();
-    return rows.map((row) => this.toDomain(row));
+    const users = await this.prismaService.user.findMany();
+    return users.map((user) => this.toDomain(user));
   };
 
   async findByEmail(email: Email): Promise<User | null> {
-    const row = await this.prismaService.user.findUnique({where: {email: email.toString()}});
-    if(!row) return null
-    return this.toDomain(row);
+    const user = await this.prismaService.user.findUnique({where: {email: email.toString()}});
+    if(!user) return null
+    return this.toDomain(user);
   };
 
   async save(user: User, passwordHash: string): Promise<User> {
@@ -39,21 +39,21 @@ export class PrimsaUserRepository implements IUserRepository {
     await this.prismaService.user.delete({where: {id: userId}});
   };
 
-  toDomain(row: any): User {
+  private toDomain(user: any): User {
     return new User({
-      id: row.id,
-      email: new Email(row.email),
-      name: row.name,
-      phone: row.phone ?? undefined,
-      role: row.role.toLowerCase() as any,
-      avatarUrl: row.avatarUrl ?? undefined,
-      isVerified: row.isVerified,
-      isActive: row.isActive,
-      createdAt: row.createdAt,
+      id: user.id,
+      email: new Email(user.email),
+      name: user.name,
+      phone: user.phone ?? undefined,
+      role: user.role.toLowerCase() as any,
+      avatarUrl: user.avatarUrl ?? undefined,
+      isVerified: user.isVerified,
+      isActive: user.isActive,
+      createdAt: user.createdAt,
     }); 
   }
 
-  toPersistence(user: User, passwordHash: string): any {
+  private toPersistence(user: User, passwordHash: string): any {
     return {
       id: user.id,
       email: user.email.toString(),

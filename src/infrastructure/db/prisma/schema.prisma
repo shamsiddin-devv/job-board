@@ -157,7 +157,7 @@ model Category {
 
 model Job {
   id          String     @id @default(uuid())
-  ownerId     String
+  userId      String
   title       String
   description String?
   postType    PostType   @default(JOB)
@@ -174,7 +174,7 @@ model Job {
   updatedAt   DateTime   @updatedAt
 
   // Relations
-  owner         User          @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   applications  Application[]
   jobCategories JobCategory[]
   savedBy       SavedJob[]
