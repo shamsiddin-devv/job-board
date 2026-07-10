@@ -25,11 +25,11 @@ export class PrismaJobRepository implements IJobRepository {
     return jobs.map((job) => this.toDomain(job));
   }
 
-  async save(job: Job): Promise<Job> {
+  async save(data: Job): Promise<Job> {
     const row = await this.prismaService.job.upsert({
-      where: {id: job.id},
-      update: this.toPersistance(job),
-      create: this.toPersistance(job)
+      where: {id: data.id},
+      update: this.toPersistance(data),
+      create: this.toPersistance(data)
     });
     return this.toDomain(row);
   };
@@ -45,9 +45,9 @@ export class PrismaJobRepository implements IJobRepository {
       userId: job.userId,
       title: job.title,
       description: job.description,
-      postType: job.postType,
-      jobType: job.jobType,
-      workFormat: job.workFormat,
+      postType: job.postType.toLowerCase(),
+      jobType: job.jobType.toLowerCase(),
+      workFormat: job.workFormat.toLowerCase(),
       city: job.city,
       salaryRange: new SalaryRange({
         currency: job.currency,
@@ -66,9 +66,9 @@ export class PrismaJobRepository implements IJobRepository {
       userId: job.userId,
       title: job.title,
       description: job.description,
-      postType: job.postType,
-      jobType: job.jobType,
-      workFormat: job.workFormat,
+      postType: job.postType.toUpperCase(),
+      jobType: job.jobType.toUpperCase(),
+      workFormat: job.workFormat.toUpperCase(),
       city: job.city,
       salaryRange: job.salaryRange,
       status: job.status,

@@ -25,11 +25,11 @@ export class PrimsaUserRepository implements IUserRepository {
     return this.toDomain(user);
   };
 
-  async save(user: User, passwordHash: string): Promise<User> {
+  async save(data: User, passwordHash: string): Promise<User> {
     const row = await this.prismaService.user.upsert({
-      where: {id: user.id ?? ''},
-      update: this.toPersistence(user, passwordHash),
-      create: this.toPersistence(user, passwordHash)
+      where: {id: data.id ?? ''},
+      update: this.toPersistence(data, passwordHash),
+      create: this.toPersistence(data, passwordHash)
     })
     return this.toDomain(row);
   };
