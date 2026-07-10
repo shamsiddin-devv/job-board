@@ -16,7 +16,6 @@ export class PrismaJobRepository implements IJobRepository {
 
   async findAllByUserId(userId: string): Promise<Job[] | null> {
     const jobs = await this.prismaService.job.findMany({where: {userId}});
-    if(!jobs) return null;
     return jobs.map((job) => this.toDomain(job));
   };
   
