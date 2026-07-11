@@ -104,7 +104,7 @@ model RefreshToken {
 
 model OtpCode {
   id        String   @id @default(uuid())
-  user_id   String   @unique
+  userId    String   @unique
   code      Int
   type      OtpType  @default(EMAIL_VERIFY)
   expiresAt DateTime
@@ -112,7 +112,7 @@ model OtpCode {
   createdAt DateTime @default(now())
 
   // Relations -> one-to-many -> OtpCode
-  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("otp_codes")
 }

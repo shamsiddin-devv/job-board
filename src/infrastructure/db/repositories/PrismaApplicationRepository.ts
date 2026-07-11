@@ -15,9 +15,9 @@ export class PrismaApplicationRepository implements IApplicationRepository {
   };
 
   async findByJobApplicant(jobId: string, applicantId: string): Promise<Application | null> {
-    const job = await this.prismaService.application.findUnique({where: {jobId_applicantId: {jobId, applicantId}}});
-    if(!job) return null
-    return this.toDomain(job);
+    const jobApplicant = await this.prismaService.application.findUnique({where: {jobId_applicantId: {jobId, applicantId}}});
+    if(!jobApplicant) return null
+    return this.toDomain(jobApplicant);
   };
 
   async findAll(): Promise<Application[]> {
@@ -25,17 +25,20 @@ export class PrismaApplicationRepository implements IApplicationRepository {
     return applications.map((application) => this.toDomain(application));
   };
 
-  async save(data: Application): Promise<Application> {
-    const application = await this.prismaService.application.upsert({
-      where: {id: data.id ?? ''},
-      update: this.toPersistance(data),
-      create: this.toPersistance(data)
-    });
+  async create(data: Application): Promise<Application> {
+    const application = await this.prismaService.application.create({data: this.toPersistence(data)});
     return this.toDomain(application);
   };
 
+  async update(applicationId: string, data: Application): Promise<Application> {
+    const row = await this.prismaService.application.update({
+      where: {id: applicationId},
+      data: this.toPersistence(data)
+    })
+    return this.toDomain(row);
+  };
+
   async remove(applicationId: string): Promise<void> {
-    await this.findById(applicationId),
     await this.prismaService.application.delete({where: {id: applicationId}});
   };
 
@@ -51,7 +54,7 @@ export class PrismaApplicationRepository implements IApplicationRepository {
     });
   };
 
-  private toPersistance(application: Application): any {
+  private toPersistence(application: Application): any {
     return {
       id: application.id,
       jobId: application.jobId,

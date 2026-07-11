@@ -15,8 +15,8 @@ export class PrismaJobRepository implements IJobRepository {
   }
 
   async findAllByUserId(userId: string): Promise<Job[] | null> {
-    const jobs = await this.prismaService.job.findMany({where: {userId}});
-    return jobs.map((job) => this.toDomain(job));
+    const userJobs = await this.prismaService.job.findMany({where: {userId}});
+    return userJobs.map((job) => this.toDomain(job));
   };
   
   async findAll(): Promise<Job[]> {
@@ -24,17 +24,22 @@ export class PrismaJobRepository implements IJobRepository {
     return jobs.map((job) => this.toDomain(job));
   }
 
-  async save(data: Job): Promise<Job> {
-    const row = await this.prismaService.job.upsert({
-      where: {id: data.id},
-      update: this.toPersistance(data),
-      create: this.toPersistance(data)
+  async create(data: Job): Promise<Job> {
+    const row = await this.prismaService.job.create({
+      data: this.toPersistence(data)
+    });
+    return this.toDomain(row)
+  };
+
+  async update(jobId: string, data: Job): Promise<Job> {
+    const row = await this.prismaService.job.update({
+      where: {id: jobId},
+      data: this.toPersistence(data),
     });
     return this.toDomain(row);
   };
 
   async remove(jobId: string): Promise<void> {
-    await this.findById(jobId);
     await this.prismaService.job.delete({where: {id: jobId}});
   };
 
@@ -59,7 +64,7 @@ export class PrismaJobRepository implements IJobRepository {
     });
   }
 
-  private toPersistance(job: Job): any {
+  private toPersistence(job: Job): any {
     return {
       id: job.id,
       userId: job.userId,

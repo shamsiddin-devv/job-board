@@ -15,9 +15,9 @@ export class PrismaResumeRepository implements IResumeRepository {
   };
 
   async findByUserId(userId: string): Promise<Resume | null> {
-    const user = await this.prismaService.resume.findFirst({where: {userId}});
-    if(!user) return null
-    return this.toDomain(user);
+    const userResume = await this.prismaService.resume.findFirst({where: {userId}});
+    if(!userResume) return null
+    return this.toDomain(userResume);
   };
 
   async findAll(): Promise<Resume[]> {
@@ -25,17 +25,22 @@ export class PrismaResumeRepository implements IResumeRepository {
     return resumes.map((resume) => this.toDomain(resume));
   };
 
-  async save(data: Resume): Promise<Resume> {
-    const row = await this.prismaService.resume.upsert({
-      where: {id: data.id ?? ''},
-      update: this.toPersistance(data),
-      create: this.toPersistance(data)
+  async create(data: Resume): Promise<Resume> {
+    const row = await this.prismaService.resume.create({
+      data: this.toPersistence(data)
+    });
+    return this.toDomain(row);
+  };
+
+  async update(resumeId: string, data: Resume): Promise<Resume> {
+    const row = await this.prismaService.resume.update({
+      where: {id: resumeId},
+      data: this.toPersistence(data),
     });
     return this.toDomain(row);
   };
 
   async remove(resumeId: string): Promise<void> {
-    await this.findById(resumeId);
     await this.prismaService.resume.delete({where: {id: resumeId}});
   };
 
@@ -53,7 +58,7 @@ export class PrismaResumeRepository implements IResumeRepository {
     });
   };
 
-  private toPersistance(resume: Resume): any {
+  private toPersistence(resume: Resume): any {
     return {
       id: resume.id,
       userId: resume.userId,

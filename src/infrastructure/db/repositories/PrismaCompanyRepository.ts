@@ -15,9 +15,9 @@ export class PrismaCompanyRepository implements ICompanyRepository {
   }
 
   async findByUserId(userId: string): Promise<Company | null> {
-    const user = await this.prismaService.company.findUnique({where: {userId}});
-    if(!user) return null
-    return this.toDomain(user);
+    const userCompany = await this.prismaService.company.findUnique({where: {userId}});
+    if(!userCompany) return null
+    return this.toDomain(userCompany);
   }
 
   async findAll(): Promise<Company[]> {
@@ -25,17 +25,22 @@ export class PrismaCompanyRepository implements ICompanyRepository {
     return companies.map((company) => this.toDomain(company));
   };
 
-  async save(data: Company): Promise<Company> {
-    const row = await this.prismaService.company.upsert({
-      where: {id: data.id ?? ''},
-      update: this.toPersistance(data),
-      create: this.toPersistance(data)
+  async create(data: Company): Promise<Company> {
+    const row = await this.prismaService.company.create({
+      data: this.toPersistence(data)
+    });
+    return this.toDomain(row);
+  };
+  
+  async update(companyId: string, data: Company): Promise<Company> {
+    const row = await this.prismaService.company.update({
+      where: {id: companyId},
+      data: this.toPersistence(data)
     });
     return this.toDomain(row);
   };
 
   async remove(companyId: string): Promise<void> {
-    await this.findById(companyId);
     await this.prismaService.company.delete({where: {id: companyId}});
   };
 
@@ -55,7 +60,7 @@ export class PrismaCompanyRepository implements ICompanyRepository {
     });
   };
 
-  private toPersistance(company: Company): any {
+  private toPersistence(company: Company): any {
     return {
       id: company.id,
       userId: company.userId,
