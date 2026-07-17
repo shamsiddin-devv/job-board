@@ -14,11 +14,6 @@ enum Role {
   ADMIN
 }
 
-enum OtpType {
-  EMAIL_VERIFY
-  PASSWORD_RESET
-}
-
 enum PostType {
   JOB
   RESUME
@@ -78,7 +73,6 @@ model User {
   applications  Application[]
   savedJobs     SavedJob[]
   notifications Notification[]
-  otpcodes      OtpCode[]
   refreshTokens RefreshToken[]
 
   @@map("users")
@@ -98,23 +92,6 @@ model RefreshToken {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("refresh_tokens")
-}
-
-// OTP - User verify
-
-model OtpCode {
-  id        String   @id @default(uuid())
-  userId    String   @unique
-  code      Int
-  type      OtpType  @default(EMAIL_VERIFY)
-  expiresAt DateTime
-  isUsed    Boolean  @default(false)
-  createdAt DateTime @default(now())
-
-  // Relations -> one-to-many -> OtpCode
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@map("otp_codes")
 }
 
 // COMPANIES — kompaniya profili
