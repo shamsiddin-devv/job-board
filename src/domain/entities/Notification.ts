@@ -1,3 +1,4 @@
+import { NOTIFICATION_MESSAGES } from "../constants/message";
 import { BadRequestError } from "../errors/BadRequestError";
 import { ConflictError } from "../errors/ConflictError";
 
@@ -17,11 +18,11 @@ export class Notification {
 
   constructor(private props: INotificationProps) {
     if(!props.userId) {
-      throw new BadRequestError('User id is required.');
+      throw new BadRequestError(NOTIFICATION_MESSAGES.USER_ID_REQUIRED);
     };
 
     if(!props.message && props.message.trim() === '') {
-      throw new BadRequestError('Message is required.');
+      throw new BadRequestError(NOTIFICATION_MESSAGES.MESSAGE_REQUIRED);
     };
 
     this._isRead = this.props.isRead ?? false;
@@ -29,7 +30,7 @@ export class Notification {
 
   markAsRead(): void {
     if(this._isRead) {
-      throw new ConflictError('Notification has already been read.')
+      throw new ConflictError(NOTIFICATION_MESSAGES.NOTIFICATION_ALREADY_READ);
     }
     this._isRead = true;
   };

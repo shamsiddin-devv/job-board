@@ -1,6 +1,6 @@
 import { UserRoles } from '../entities/User';
 
-export interface IJwtPayload {
+export interface ITokenPayload {
   sub: string;
   email: string;
   role: UserRoles;
@@ -8,9 +8,9 @@ export interface IJwtPayload {
   exp?: number;
 }
 
-export interface IJwtRepository {
-  signAccessToken(payload: IJwtPayload): string;
-  signRefreshToken(payload: IJwtPayload): string;
-  verifyAccessToken(token: string): IJwtPayload;
-  verifyRefreshToken(token: string): IJwtPayload;
+export interface ITokenService {
+  signAccessToken(payload: ITokenPayload): string;
+  signRefreshToken(payload: ITokenPayload): string;
+  verifyAccessToken(token: string): ITokenPayload;
+  verifyRefreshToken(token: string): ITokenPayload;
 }

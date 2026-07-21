@@ -1,3 +1,4 @@
+import { RESUME_MESSAGES } from "../constants/message"
 import { BadRequestError } from "../errors/BadRequestError"
 import { ConflictError } from "../errors/ConflictError"
 import { SalaryRange } from "../value-objects/Salary"
@@ -21,11 +22,11 @@ export class Resume {
 
   constructor(private props: IResumeProps) {
     if(!props.title || props.title.trim() === '') {
-      throw new BadRequestError('Title is required.');
+      throw new BadRequestError(RESUME_MESSAGES.TITLE_REQUIRED);
     };
 
     if(!props.userId) {
-      throw new BadRequestError('User id is required.')
+      throw new BadRequestError(RESUME_MESSAGES.USER_ID_REQUIRED);
     };
 
     this._status = props.status ?? 'active'
@@ -33,31 +34,31 @@ export class Resume {
 
   close(): void {
     if(this._status === 'closed') {
-      throw new ConflictError('CV already closed.')
+      throw new ConflictError(RESUME_MESSAGES.RESUME_ALREADY_CLOSED);
     };
     this._status = 'closed'
   };
 
   reopen(): void {
     if(this._status === 'active') {
-      throw new ConflictError('CV already active.');
+      throw new ConflictError(RESUME_MESSAGES.RESUME_ALREADY_ACTIVE);
     };
     this._status = 'active'
   };
 
   draft(): void {
     if(this._status === 'draft') {
-      throw new ConflictError('CV already draft.')
+      throw new ConflictError(RESUME_MESSAGES.RESUME_ALREADY_DRAFT);
     };
     if(this._status === 'closed') {
-      throw new BadRequestError('Closed CV cannot be drafted.')
+      throw new BadRequestError(RESUME_MESSAGES.CLOSED_RESUME_CANNOT_BE_DRAFTED)
     };
     this._status = 'draft'
   };
 
   attachFile(url: string): void {
     if(!url && url.trim() === '') {
-      throw new BadRequestError('File URL is required.');
+      throw new BadRequestError(RESUME_MESSAGES.FILE_URL_REQUIRED);
     };
     this.props.fileUrl = url;
   };

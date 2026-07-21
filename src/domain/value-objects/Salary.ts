@@ -1,3 +1,4 @@
+import { JOB_MESSAGES } from '../constants/message';
 import { CurrencyType } from '../entities/Job';
 import { ValidationError } from '../errors/ValidationError';
 
@@ -14,18 +15,16 @@ export class SalaryRange {
 
   constructor(props: ISalaryRangeProps) {
     if (props.min !== undefined && props.min < 0) {
-      throw new ValidationError('Minimum salary cannot be negative.');
+      throw new ValidationError(JOB_MESSAGES.SALARY_NEGATIVE);
     }
 
     if (props.max !== undefined && props.max < 0) {
-      throw new ValidationError('Maximum salary cannot be negative.');
+      throw new ValidationError(JOB_MESSAGES.SALARY_NEGATIVE);
     }
 
     if (props.min !== undefined && props.max !== undefined) {
       if (props.min > props.max) {
-        throw new ValidationError(
-          'Minimum salary should not be higher than Maximum salary.',
-        );
+        throw new ValidationError(JOB_MESSAGES.SALARY_HIGHER);
       }
     }
 

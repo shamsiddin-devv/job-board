@@ -1,3 +1,4 @@
+import { CATEGORY_MESSAGES } from "../constants/message"
 import { BadRequestError } from "../errors/BadRequestError"
 
 export interface ICategoryProps {
@@ -11,11 +12,11 @@ export interface ICategoryProps {
 export class Category {
   constructor(private props: ICategoryProps) {
     if(!props.name && props.name.trim() === '') {
-      throw new BadRequestError('Name is required.');
+      throw new BadRequestError(CATEGORY_MESSAGES.NAME_REQUIRED);
     };
 
     if(!props.slug && props.slug === '') {
-      throw new BadRequestError('Slug is required.');
+      throw new BadRequestError(CATEGORY_MESSAGES.SLUG_REQUIRED);
     };
   };
 

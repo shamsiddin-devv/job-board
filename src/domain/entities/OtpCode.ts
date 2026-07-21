@@ -1,3 +1,4 @@
+import { OTP_MESSAGES } from "../constants/message";
 import { BadRequestError } from "../errors/BadRequestError";
 import { ConflictError } from "../errors/ConflictError";
 import { UnauthorizedError } from "../errors/UnauthorizedError";
@@ -19,11 +20,11 @@ export class OtpCode {
 
   constructor(private props: IOtpCodeProps) {
     if(!props.userId) {
-      throw new BadRequestError('User id is required.');
+      throw new BadRequestError(OTP_MESSAGES.USER_ID_REQUIRED);
     };
 
     if(!props.code && !Number(props.code)) {
-      throw new UnauthorizedError('Invalid OTP code.');
+      throw new UnauthorizedError(OTP_MESSAGES.OTP_INVALID);
     };
 
     this._isUsed = this.props.isUsed ?? false;
@@ -43,7 +44,7 @@ export class OtpCode {
 
   markAsUsed(): void {
     if(!this.isExpired()) {
-      throw new UnauthorizedError('OTP has expired.')
+      throw new UnauthorizedError(OTP_MESSAGES.OTP_EXPIRED);
     };
     this._isUsed = true
   };

@@ -1,3 +1,4 @@
+import { JOB_MESSAGES } from "../constants/message";
 import { BadRequestError } from "../errors/BadRequestError";
 import { SalaryRange } from "../value-objects/Salary";
 
@@ -28,11 +29,11 @@ export class Job {
 
   constructor(private props: IJobProps) {
     if(!props.title && props.title.trim() === '') {
-      throw new BadRequestError('Title is required.')
+      throw new BadRequestError(JOB_MESSAGES.TITLE_REQUIRED);
     };
 
     if(!props.userId) {
-      throw new BadRequestError('User id is required.')
+      throw new BadRequestError(JOB_MESSAGES.USER_ID_REQUIRED);
     };
 
     this._status = props.status ?? 'active';
@@ -41,21 +42,21 @@ export class Job {
 
   closed(): void {
     if(this._status === 'closed') {
-      throw new BadRequestError('Vacancy is already closed.')
+      throw new BadRequestError(JOB_MESSAGES.JOB_ALREADY_CLOSED);
     };
     this._status = 'closed'
   };
 
   draft(): void {
     if(this._status === 'closed') {
-      throw new BadRequestError('A closed vacancy cannot be moved to a draft.')
+      throw new BadRequestError(JOB_MESSAGES.CLOSED_CANNOT_BE_DRAFTED);
     };
     this._status = 'draft'
   };
 
   publish(): void {
     if(this._status === 'closed') {
-      throw new BadRequestError('A closed vacancy cannot be republished.')
+      throw new BadRequestError(JOB_MESSAGES.CLOSED_CANNOT_BE_REPUBLISHED);
     };
     this._status = 'active'
   };

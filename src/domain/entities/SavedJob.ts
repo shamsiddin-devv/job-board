@@ -1,3 +1,4 @@
+import { SAVED_JOB_MESSAGES } from '../constants/message';
 import { BadRequestError } from '../errors/BadRequestError';
 
 export interface ISavedJobProps {
@@ -10,10 +11,10 @@ export interface ISavedJobProps {
 export class SavedJob {
   constructor(private props: ISavedJobProps) {
     if (!props.userId) {
-      throw new BadRequestError('User id is required.');
+      throw new BadRequestError(SAVED_JOB_MESSAGES.USER_ID_REQUIRED);
     };
     if(!props.jobId) {
-      throw new BadRequestError('Job id is reuqired.');
+      throw new BadRequestError(SAVED_JOB_MESSAGES.JOB_ID_REQUIRED);
     };
   };
 

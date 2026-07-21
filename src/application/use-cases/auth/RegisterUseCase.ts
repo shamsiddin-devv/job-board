@@ -5,6 +5,7 @@ import { IUserRepository } from 'src/domain/repositories/IUserRepository';
 import { IHashRepository } from 'src/domain/services/IHashService';
 import { Email } from 'src/domain/value-objects/Email';
 import { SendOtpUseCase } from './SendOtpUseCase';
+import { AUTH_MESSAGES } from 'src/domain/constants/message';
 
 export class RegisterUseCase {
   constructor(
@@ -17,7 +18,7 @@ export class RegisterUseCase {
     const email = new Email(dto.email);
 
     const exist = await this.userRepo.findByEmail(email.toString());
-    if(exist) throw new ConflictError('User already exist.');
+    if(exist) throw new ConflictError(AUTH_MESSAGES.EMAIL_ALREADY_EXISTS);
 
     const passwordHash = await this.hashService.hash(dto.password);
 
@@ -30,6 +31,6 @@ export class RegisterUseCase {
     await this.userRepo.create(user, passwordHash);
     await this.sendOtpUseCase.execute(dto.email);
 
-    return {success: true, message: `Verification code has been sent to your email.`}
+    return {success: true, message: AUTH_MESSAGES.OTP_SENT}
   };
 };

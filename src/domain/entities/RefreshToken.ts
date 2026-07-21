@@ -1,3 +1,4 @@
+import { REFRESH_TOKEN_MESSAGES } from "../constants/message";
 import { BadRequestError } from "../errors/BadRequestError";
 import { UnauthorizedError } from "../errors/UnauthorizedError";
 
@@ -5,7 +6,7 @@ export interface IRefreshTokenProps {
   id?: string;
   userId: string;
   token: string
-  expiresAt?: Date
+  expiresAt: Date
   isRevoked?: boolean;
   createdAt?: Date
 };
@@ -15,11 +16,11 @@ export class RefreshToken {
 
   constructor(private props: IRefreshTokenProps) {
     if(!props.userId) {
-      throw new BadRequestError('User Id is required.');
+      throw new BadRequestError(REFRESH_TOKEN_MESSAGES.USER_ID_REQUIRED);
     };
 
     if(!props.token && props.token.trim() === '') {
-      throw new BadRequestError('Token is required.')
+      throw new BadRequestError(REFRESH_TOKEN_MESSAGES.TOKEN_REQUIRED);
     };
 
     this._isRevoked = this.props.isRevoked ?? false
@@ -35,7 +36,7 @@ export class RefreshToken {
 
   revoke(): void {
     if(this._isRevoked) {
-      throw new UnauthorizedError('Invalid refresh token.')
+      throw new UnauthorizedError(REFRESH_TOKEN_MESSAGES.TOKEN_REVOKED);
     };
     this._isRevoked = true
   };

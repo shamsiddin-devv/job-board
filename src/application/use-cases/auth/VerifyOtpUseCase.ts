@@ -1,6 +1,6 @@
+import { AUTH_MESSAGES } from 'src/domain/constants/message';
 import { BadRequestError } from 'src/domain/errors/BadRequestError';
 import { IOtpRepository } from 'src/domain/repositories/IOtpRepository';
-import { IUserRepository } from 'src/domain/repositories/IUserRepository';
 import { Email } from 'src/domain/value-objects/Email';
 
 export class VerifyOtpUseCase {
@@ -13,11 +13,11 @@ export class VerifyOtpUseCase {
 
     const savedCode = await this.otpRepo.find(email.toString());
     if(!savedCode) {
-      throw new BadRequestError('OTP not found or expired.');
+      throw new BadRequestError(AUTH_MESSAGES.OTP_NOT_FOUND_OR_EXPIRED);
     };
 
     if(savedCode !== inputCode) {
-      throw new BadRequestError('Invalid OTP');
+      throw new BadRequestError(AUTH_MESSAGES.OTP_INVALID);
     };
 
     await this.otpRepo.remove(email.toString());

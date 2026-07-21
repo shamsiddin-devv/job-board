@@ -1,3 +1,4 @@
+import { AUTH_MESSAGES, USER_MESSAGES } from '../constants/message';
 import { BadRequestError } from '../errors/BadRequestError';
 import { ConflictError } from '../errors/ConflictError';
 import { Email } from '../value-objects/Email';
@@ -22,12 +23,12 @@ export class User {
 
   constructor(private props: IUserProps) {
     if (!props.name || props.name.trim() === '') {
-      throw new BadRequestError('Name is required.');
+      throw new BadRequestError(USER_MESSAGES.NAME_REQUIRED);
     };
 
     const validateRoles: UserRoles[] = ['company', 'worker', 'admin'];
     if (!validateRoles.includes(props.role)) {
-      throw new BadRequestError('Invalid role.')
+      throw new BadRequestError(AUTH_MESSAGES.INVALID_ROLE)
     };
 
     this._isVerified = props.isVerified ?? false
@@ -36,21 +37,21 @@ export class User {
   
   markAsVerified(): void {
     if(this._isVerified) {
-      throw new ConflictError('Already approverd.')
+      throw new ConflictError(USER_MESSAGES.ALREADY_APPROVED)
     }
     this._isVerified = true
   };
 
   deactive(): void {
     if(!this._isActive) {
-      throw new ConflictError('Already blocked.')
+      throw new ConflictError(USER_MESSAGES.ALREADY_BLOCKED)
     };
     this._isVerified = false
   };
 
   activate(): void {
     if(this._isActive) {
-      throw new ConflictError('Already active.')
+      throw new ConflictError(USER_MESSAGES.ALREADY_ACTIVE)
     };
     this._isActive = true
   };

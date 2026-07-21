@@ -1,3 +1,4 @@
+import { COMPANY_MESSAGES } from "../constants/message";
 import { BadRequestError } from "../errors/BadRequestError";
 import { ConflictError } from "../errors/ConflictError";
 
@@ -21,15 +22,15 @@ export class Company {
   
   constructor(private props: ICompanyProps) {
     if(!props.name && props.name.trim() === '') {
-      throw new BadRequestError('Name is required.'); 
+      throw new BadRequestError(COMPANY_MESSAGES.NAME_REQUIRED); 
     };
 
     if(!props.userId) {
-      throw new BadRequestError('User id is required.')
+      throw new BadRequestError(COMPANY_MESSAGES.USER_ID_REQUIRED);
     };
 
     if(props.website && !props.website.startsWith('http')) {
-      throw new BadRequestError('Website must start with https://') 
+      throw new BadRequestError(COMPANY_MESSAGES.WEBSITE_REQUIRED); 
     };
 
     this._isVerified = props.isVerified ?? false
@@ -37,14 +38,14 @@ export class Company {
 
   verify(): void {
     if(this._isVerified) {
-      throw new ConflictError('Company already verified.');
+      throw new ConflictError(COMPANY_MESSAGES.COMPANY_ALREADY_VERIFIED);
     };
     this._isVerified = true
   };
 
   unverified(): void {
     if(!this._isVerified) {
-      throw new BadRequestError('Company is not verified.')
+      throw new BadRequestError(COMPANY_MESSAGES.COMPANY_NOT_VERIFIED);
     };
     this._isVerified = false
   };

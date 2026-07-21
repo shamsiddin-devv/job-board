@@ -1,3 +1,4 @@
+import { APPLICATION_MESSAGES } from "../constants/message"
 import { BadRequestError } from "../errors/BadRequestError"
 import { ConflictError } from "../errors/ConflictError"
 
@@ -18,11 +19,11 @@ export class Application {
 
   constructor(private props: IApplicationProps) {
     if(!props.jobId) {
-      throw new BadRequestError('Job id is required.');
+      throw new BadRequestError(APPLICATION_MESSAGES.JOB_ID_REQUIRED);
     };
 
     if(!props.applicantId) {
-      throw new BadRequestError('Applicant id is required.')
+      throw new BadRequestError(APPLICATION_MESSAGES.APPLICANT_ID_REQUIRED);
     };
 
     this._status = props.status ?? 'pending'
@@ -30,27 +31,27 @@ export class Application {
 
   markAsReviewed(): void {
     if(this._status !== 'pending') {
-      throw new BadRequestError('Only pending applications can be reviewed.') 
+      throw new BadRequestError(APPLICATION_MESSAGES.ONLY_PENDING_CAN_BE_REVIEWED) 
     };
     this._status = 'reviewed'
   };
 
   accept(): void {
     if(this._status === 'accepted') {
-      throw new ConflictError('Application already accepted.')
+      throw new ConflictError(APPLICATION_MESSAGES.APPLICATION_ALREADY_ACCEPTED);
     };
     if(this._status === 'rejected') {
-      throw new BadRequestError('Rejected application cannot be accepted.')
+      throw new BadRequestError(APPLICATION_MESSAGES.REJECTED_CANNOT_BE_ACCEPTED);
     };
     this._status = 'accepted'
   };
 
   reject(): void {
     if(this._status === 'rejected') {
-      throw new ConflictError('Application already rejected.')
+      throw new ConflictError(APPLICATION_MESSAGES.APPLICATION_ALREADY_REJECTED);
     };
     if(this._status === 'accepted') {
-      throw new BadRequestError('Accepted application cannot be rejected.')
+      throw new BadRequestError(APPLICATION_MESSAGES.ACCEPTED_CANNOT_BE_REJECTED)
     };
     this._status = 'rejected'
   };
