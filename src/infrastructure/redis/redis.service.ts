@@ -11,9 +11,9 @@ export class CacheRedisService implements ICacheRedisInterface {
     return JSON.parse(data) as T;
   };
 
-  async set<T>(key: string, value: T, ttlSeconds: 120): Promise<void> {
+  async set<T>(key: string, value: T, ttlSeconds: number): Promise<void> {
     const data = JSON.stringify(value);
-    await this.redis.set(key, data, 'EX', ttlSeconds, 'NX');
+    await this.redis.set(key, data, 'EX', ttlSeconds);
   };
 
   async delete(key: string): Promise<void> {

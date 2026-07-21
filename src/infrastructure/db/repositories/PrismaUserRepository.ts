@@ -9,7 +9,9 @@ export class PrismaUserRepository implements IUserRepository {
   constructor(private readonly prismaService: PrismaService) {}
 
   async findById(userId: string): Promise<User | null> {
-    const user = await this.prismaService.user.findUnique({ where: { id: userId } });
+    const user = await this.prismaService.user.findUnique({
+      where: { id: userId },
+    });
     if (!user) return null;
     return this.toDomain(user);
   }
@@ -19,8 +21,10 @@ export class PrismaUserRepository implements IUserRepository {
     return users.map((user) => this.toDomain(user));
   }
 
-  async findByEmail(email: Email): Promise<User | null> {
-    const userEmail = await this.prismaService.user.findUnique({ where: { email: email.toString() } });
+  async findByEmail(email: string): Promise<User | null> {
+    const userEmail = await this.prismaService.user.findUnique({
+      where: {email},
+    });
     if (!userEmail) return null;
     return this.toDomain(userEmail);
   }
@@ -30,14 +34,14 @@ export class PrismaUserRepository implements IUserRepository {
       data: this.toPersistence(data, passwordHash),
     });
     return this.toDomain(row);
-  };
+  }
 
   async update(userId: string, data: User): Promise<User> {
     const row = await this.prismaService.user.update({
-      where: {id: userId},
-      data: this.toPersistence(data)
+      where: { id: userId },
+      data: this.toPersistence(data),
     });
-    return this.toDomain(row)
+    return this.toDomain(row);
   }
 
   async remove(userId: string): Promise<void> {

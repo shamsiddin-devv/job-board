@@ -98,6 +98,43 @@ Nest is an MIT-licensed open source project. It can grow thanks to the sponsors 
 Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
 
 
+application/use-cases/
+├── auth/
+│   ├── RegisterUseCase.ts        — ro'yxatdan o'tish
+│   ├── LoginUseCase.ts           — kirish
+│   ├── SendOtpUseCase.ts         — OTP kod yuborish
+│   ├── VerifyOtpUseCase.ts       — OTP kodni tasdiqlash
+│   ├── RefreshTokenUseCase.ts    — yangi access token olish
+│   └── LogoutUseCase.ts          — chiqish, refresh token bekor qilish
+│
+├── job/
+│   ├── PostJobUseCase.ts         — vakansiya yaratish
+│   ├── UpdateJobUseCase.ts       — vakansiyani tahrirlash
+│   ├── CloseJobUseCase.ts        — vakansiyani yopish
+│   ├── SearchJobsUseCase.ts      — filter bilan qidirish
+│   └── GetJobByIdUseCase.ts      — bitta vakansiyani ko'rish (+ view count)
+│
+├── application/                  — "Application" entity uchun (ariza)
+│   ├── ApplyToJobUseCase.ts      — ariza topshirish
+│   ├── AcceptApplicationUseCase.ts — arizani qabul qilish
+│   └── RejectApplicationUseCase.ts — arizani rad etish
+│
+├── company/
+│   ├── CreateCompanyUseCase.ts   — kompaniya profili yaratish
+│   ├── UpdateCompanyUseCase.ts   — profilni tahrirlash
+│   └── VerifyCompanyUseCase.ts   — admin tomonidan tasdiqlash
+│
+├── resume/
+│   ├── CreateResumeUseCase.ts    — CV yaratish
+│   └── UploadResumeFileUseCase.ts — CV faylini yuklash
+│
+├── saved-job/
+│   ├── SaveJobUseCase.ts         — vakansiyani saqlash
+│   └── UnsaveJobUseCase.ts       — saqlashdan olib tashlash
+│
+└── notification/
+    └── MarkNotificationReadUseCase.ts — o'qilgan deb belgilash
+
 
 
 src/

@@ -1,22 +1,20 @@
-import { InjectRedis } from "@nestjs-modules/ioredis";
 import { Injectable } from "@nestjs/common";
-import Redis from "ioredis";
 import { IOtpRepository } from "src/domain/repositories/IOtpRepository";
-
+import { CacheRedisService } from "src/infrastructure/redis/redis.service";
 
 @Injectable()
 export class RedisOtpRepository implements IOtpRepository {
-  constructor(@InjectRedis() private readonly redis: Redis) {}
+  constructor(private readonly cacheService: CacheRedisService) {}
 
-  async create(email: string, code: number): Promise<void> {
-    await this.redis.set(`otp:${email}`, code, 'EX', 120, 'NX');
+  async create(email: string, code: string): Promise<void> {
+    await this.cacheService.set(`otp:${email}`, code, 120);
   };
 
-  async find(email: string): Promise<void> {
-    await this.redis.get(`otp:${email}`)
+  async find(email: string): Promise<string | null> {
+    return this.cacheService.get(`otp:${email}`)
   };
 
   async remove(email: string): Promise<void> {
-    await this.redis.del(`otp:${email}`);
+    await this.cacheService.delete(`otp:${email}`);
   };
 };
