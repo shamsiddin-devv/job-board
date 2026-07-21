@@ -42,6 +42,7 @@ export class ConfirmRegistrationUseCase {
     await this.refreshTokenRepo.create(refreshRow);
 
     return {
+      message: AUTH_MESSAGES.REGISTER_SUCCESS,
       accessToken,
       user: {
         id: user.id,
