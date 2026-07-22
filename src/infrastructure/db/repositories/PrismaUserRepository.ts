@@ -27,7 +27,13 @@ export class PrismaUserRepository implements IUserRepository {
     });
     if (!userEmail) return null;
     return this.toDomain(userEmail);
-  }
+  };
+
+  async findPasswordHashByUserId(userId: string): Promise<string | null> {
+    const userPassword = await this.prismaService.user.findUnique({where: {id: userId}});
+    if(!userPassword) return null;
+    return userPassword.passwordHash;
+  };
 
   async create(data: User, passwordHash: string): Promise<User> {
     const row = await this.prismaService.user.create({

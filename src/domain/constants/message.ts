@@ -37,6 +37,8 @@ export const AUTH_MESSAGES = {
   REFRESH_TOKEN_INVALID: 'Invalid refresh token.',
   REFRESH_TOKEN_EXPIRED: 'Refresh token has expired.',
   REFRESH_TOKEN_REVOKED: 'Refresh token has been revoked.',
+  REFRESH_TOKEN_NOT_FOUND: 'Refresh token not found.',
+  REFRESH_TOKEN_EXPIRED_OR_REVOKED: 'Refresh token expired or revoked.',
 
   // Authorization
   UNAUTHORIZED: 'Unauthorized.',

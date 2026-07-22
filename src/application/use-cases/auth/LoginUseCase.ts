@@ -40,7 +40,7 @@ export class LoginUseCase {
     const refreshRow = new RefreshToken({
       userId: exist.id!,
       token: refreshToken,
-      expiresAt: new Date(Date.now() + 24 * 30 * 60 * 60 * 1000)
+      expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
     });
 
     await this.refreshTokenRepo.create(refreshRow);

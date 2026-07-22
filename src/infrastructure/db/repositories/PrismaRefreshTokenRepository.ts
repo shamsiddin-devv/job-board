@@ -13,9 +13,15 @@ export class PrismaRefreshTokenRepository implements IRefreshTokenRepository {
     return this.toDomain(refreshToken);
   };
 
-  async findByUserId(userId: string): Promise<RefreshToken[]> {
-    const userTokens = await this.prismaService.refreshToken.findMany({where: {userId}})
-    return userTokens.map((userToken) => this.toDomain(userToken));
+  async findByUserId(userId: string): Promise<RefreshToken | null> {
+    const userToken = await this.prismaService.refreshToken.findFirst({where: {userId}})
+    return this.toDomain(userToken);
+  };
+
+  async findByToken(token: string): Promise<RefreshToken | null> {
+    const existToken = await this.prismaService.refreshToken.findUnique({where: {token}});
+    if(!existToken) return null;
+    return this.toDomain(existToken)
   };
 
   async findAll(): Promise<RefreshToken[]> {
