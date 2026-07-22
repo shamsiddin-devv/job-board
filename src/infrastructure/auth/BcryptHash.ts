@@ -1,7 +1,7 @@
 import bcrypt from 'bcrypt';
-import { IHashRepository } from 'src/domain/services/IHashService';
+import { IHashService } from 'src/domain/services/IHashService';
 
-export class BcryptHash implements IHashRepository {
+export class BcryptHash implements IHashService {
   private readonly SALT_ROUNDS = process.env.SALT_ROUNDS!;
 
   async hash(plainText: string): Promise<string> {

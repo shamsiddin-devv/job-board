@@ -13,7 +13,7 @@ export const AUTH_MESSAGES = {
 
   // Credentials
   INVALID_CREDENTIALS: 'Invalid email or password.',
-  INVALID_PASSWORD: 'Invalid password.',
+  INVALID_EMAIL_OR_PASSWORD: 'Invalid email or password.',
   PASSWORD_CHANGED: 'Password changed successfully.',
 
   // Email
