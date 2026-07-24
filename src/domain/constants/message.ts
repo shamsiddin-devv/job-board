@@ -89,6 +89,10 @@ export const JOB_MESSAGES = {
   ONLY_COMPANIES_CAN_POST_JOBS: 'Only company accounts can post jobs.',
   COMPANY_VERIFICATION_REQUIRED: 'Your company must be verified before posting jobs.',
   ONLY_WORKERS_CAN_POST_RESUMES: 'Only worker accounts can post resumes.',
+
+  TITLE_MUST_BE_EMPTY: 'Title must be empty.',
+  CITY_MUST_BE_EMPTY: 'City mus be empty.',
+  JOB_ACCESS_DENIED: 'You do not have permission to modify this job.',
 } as const;
 
 export const APPLICATION_MESSAGES = {

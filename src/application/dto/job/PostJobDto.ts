@@ -1,7 +1,6 @@
 import { JobType, PostType, WorkFormat } from "src/domain/entities/Job";
 
-export interface PostJobDto {
-  userId: string;
+export class PostJobDto {
   title: string;
   description: string;
   postType: PostType;

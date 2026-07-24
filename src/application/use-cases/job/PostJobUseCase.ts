@@ -15,20 +15,20 @@ export class PostJobUseCase {
     private readonly jobRepo: IJobRepository,
   ) {}
 
-  async execute(dto: PostJobDto) {
-    const user = await this.userRepo.findById(dto.userId);
+  async execute(dto: PostJobDto, userId: string) {
+    const user = await this.userRepo.findById(userId);
     if (!user) throw new NotFoundError(JOB_MESSAGES.USER_NOT_FOUND);
 
     if (dto.postType === 'job') {
       if (!user.isCompany()) {
         throw new ForbiddenError(JOB_MESSAGES.ONLY_COMPANIES_CAN_POST_JOBS);
-      }
+      };
 
       const company = await this.companyRepo.findByUserId(user.id!);
       if (!company?.isVerified) {
         throw new ForbiddenError(JOB_MESSAGES.COMPANY_VERIFICATION_REQUIRED);
-      }
-    }
+      };
+    };
 
     if (dto.postType === 'resume') {
       if (!user.isWorker()) {
