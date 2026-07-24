@@ -44,7 +44,7 @@ export class User {
 
   deactive(): void {
     if(!this._isActive) {
-      throw new ConflictError(USER_MESSAGES.ALREADY_BLOCKED)
+      throw new ConflictError(USER_MESSAGES.ALREADY_INACTIVE)
     };
     this._isVerified = false
   };

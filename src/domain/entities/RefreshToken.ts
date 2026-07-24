@@ -31,7 +31,7 @@ export class RefreshToken {
   };
 
   isValid(): boolean {
-    return !this.isExpired && !this._isRevoked
+    return !this.isExpired() && !this._isRevoked
   };
 
   revoke(): void {

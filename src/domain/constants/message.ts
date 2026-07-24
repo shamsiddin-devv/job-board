@@ -39,6 +39,7 @@ export const AUTH_MESSAGES = {
   REFRESH_TOKEN_REVOKED: 'Refresh token has been revoked.',
   REFRESH_TOKEN_NOT_FOUND: 'Refresh token not found.',
   REFRESH_TOKEN_EXPIRED_OR_REVOKED: 'Refresh token expired or revoked.',
+  REFRESH_SUCCESS: 'Access token refreshed successfully.',
 
   // Authorization
   UNAUTHORIZED: 'Unauthorized.',
@@ -58,8 +59,10 @@ export const USER_MESSAGES = {
   USER_ID_REQUIRED: 'User ID is required.',
 
   ALREADY_APPROVED: 'User has already been approved.',
-  ALREADY_BLOCKED: 'User is already blocked.',
+  ALREADY_INACTIVE: 'User is already inactive.',
   ALREADY_ACTIVE: 'User is already active.',
+
+  USER_INACTIVE: 'Your account is inactive.',
 } as const;
 
 export const JOB_MESSAGES = {

@@ -12,13 +12,9 @@ export class VerifyOtpUseCase {
     const email = new Email(emailStr);
 
     const savedCode = await this.otpRepo.find(email.toString());
-    if(!savedCode) {
-      throw new BadRequestError(AUTH_MESSAGES.OTP_NOT_FOUND_OR_EXPIRED);
-    };
+    if(!savedCode) throw new BadRequestError(AUTH_MESSAGES.OTP_NOT_FOUND_OR_EXPIRED);
 
-    if(savedCode !== inputCode) {
-      throw new BadRequestError(AUTH_MESSAGES.OTP_INVALID);
-    };
+    if(savedCode !== inputCode) throw new BadRequestError(AUTH_MESSAGES.OTP_INVALID);
 
     await this.otpRepo.remove(email.toString());
 

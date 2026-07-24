@@ -15,9 +15,7 @@ export class LogoutUseCase {
     const existToken = await this.refreshTokenRepo.findByToken(refreshToken);
     if(!existToken) throw new UnauthorizedError(AUTH_MESSAGES.REFRESH_TOKEN_INVALID);
 
-    if(!existToken.isValid()) {
-      throw new UnauthorizedError(AUTH_MESSAGES.REFRESH_TOKEN_EXPIRED_OR_REVOKED);
-    };
+    if(!existToken.isValid()) throw new UnauthorizedError(AUTH_MESSAGES.REFRESH_TOKEN_EXPIRED_OR_REVOKED);
 
     existToken.revoke();
     await this.refreshTokenRepo.update(existToken.id!, existToken);
