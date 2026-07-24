@@ -83,6 +83,12 @@ export const JOB_MESSAGES = {
   JOB_CLOSED: 'This job is closed.',
   CLOSED_CANNOT_BE_DRAFTED: 'A closed job cannot be moved to draft.',
   CLOSED_CANNOT_BE_REPUBLISHED: 'A closed job cannot be republished.',
+
+  USER_NOT_FOUND: 'User not found.',
+
+  ONLY_COMPANIES_CAN_POST_JOBS: 'Only company accounts can post jobs.',
+  COMPANY_VERIFICATION_REQUIRED: 'Your company must be verified before posting jobs.',
+  ONLY_WORKERS_CAN_POST_RESUMES: 'Only worker accounts can post resumes.',
 } as const;
 
 export const APPLICATION_MESSAGES = {
@@ -98,16 +104,13 @@ export const APPLICATION_MESSAGES = {
   ALREADY_APPLIED: 'You have already applied for this job.',
   JOB_CLOSED: 'This job is closed. Applications are no longer accepted.',
 
-  ONLY_PENDING_CAN_BE_REVIEWED:
-    'Only pending applications can be reviewed.',
+  ONLY_PENDING_CAN_BE_REVIEWED: 'Only pending applications can be reviewed.',
 
   APPLICATION_ALREADY_ACCEPTED: 'Application has already been accepted.',
-  REJECTED_CANNOT_BE_ACCEPTED:
-    'A rejected application cannot be accepted.',
+  REJECTED_CANNOT_BE_ACCEPTED: 'A rejected application cannot be accepted.',
 
   APPLICATION_ALREADY_REJECTED: 'Application has already been rejected.',
-  ACCEPTED_CANNOT_BE_REJECTED:
-    'An accepted application cannot be rejected.',
+  ACCEPTED_CANNOT_BE_REJECTED: 'An accepted application cannot be rejected.',
 } as const;
 
 export const COMPANY_MESSAGES = {
@@ -142,8 +145,7 @@ export const RESUME_MESSAGES = {
   RESUME_ALREADY_CLOSED: 'Resume is already closed.',
   RESUME_ALREADY_DRAFT: 'Resume is already in draft.',
 
-  CLOSED_RESUME_CANNOT_BE_DRAFTED:
-    'A closed resume cannot be moved to draft.',
+  CLOSED_RESUME_CANNOT_BE_DRAFTED: 'A closed resume cannot be moved to draft.',
 } as const;
 
 export const SAVED_JOB_MESSAGES = {
@@ -181,6 +183,5 @@ export const NOTIFICATION_MESSAGES = {
   MESSAGE_REQUIRED: 'Message is required.',
 
   NOTIFICATION_NOT_FOUND: 'Notification not found.',
-  NOTIFICATION_ALREADY_READ:
-    'Notification has already been marked as read.',
+  NOTIFICATION_ALREADY_READ: 'Notification has already been marked as read.',
 } as const;

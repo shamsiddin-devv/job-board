@@ -9,16 +9,20 @@ export class PrismaJobRepository implements IJobRepository {
   constructor(private readonly prismaService: PrismaService) {}
 
   async findById(jobId: string): Promise<Job | null> {
-    const job = await this.prismaService.job.findUnique({where: {id: jobId}});
-    if(!job) return null;
+    const job = await this.prismaService.job.findUnique({
+      where: { id: jobId },
+    });
+    if (!job) return null;
     return this.toDomain(job);
   }
 
   async findAllByUserId(userId: string): Promise<Job[] | null> {
-    const userJobs = await this.prismaService.job.findMany({where: {userId}});
+    const userJobs = await this.prismaService.job.findMany({
+      where: { userId },
+    });
     return userJobs.map((job) => this.toDomain(job));
-  };
-  
+  }
+
   async findAll(): Promise<Job[]> {
     const jobs = await this.prismaService.job.findMany();
     return jobs.map((job) => this.toDomain(job));
@@ -26,22 +30,22 @@ export class PrismaJobRepository implements IJobRepository {
 
   async create(data: Job): Promise<Job> {
     const row = await this.prismaService.job.create({
-      data: this.toPersistence(data)
-    });
-    return this.toDomain(row)
-  };
-
-  async update(jobId: string, data: Job): Promise<Job> {
-    const row = await this.prismaService.job.update({
-      where: {id: jobId},
       data: this.toPersistence(data),
     });
     return this.toDomain(row);
-  };
+  }
+
+  async update(jobId: string, data: Job): Promise<Job> {
+    const row = await this.prismaService.job.update({
+      where: { id: jobId },
+      data: this.toPersistence(data),
+    });
+    return this.toDomain(row);
+  }
 
   async remove(jobId: string): Promise<void> {
-    await this.prismaService.job.delete({where: {id: jobId}});
-  };
+    await this.prismaService.job.delete({ where: { id: jobId } });
+  }
 
   private toDomain(job: any): Job {
     return new Job({
@@ -74,7 +78,9 @@ export class PrismaJobRepository implements IJobRepository {
       jobType: job.jobType.toUpperCase(),
       workFormat: job.workFormat.toUpperCase(),
       city: job.city,
-      salaryRange: job.salaryRange,
+      salaryMin: job.salaryRange?.min ?? null,
+      salaryMax: job.salaryRange?.max ?? null,
+      currency: job.salaryRange?.currency ?? 'UZS',
       status: job.status,
       viewsCount: job.viewsCount,
       createdAt: job.createdAt,

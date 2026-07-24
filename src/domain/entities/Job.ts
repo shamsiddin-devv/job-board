@@ -19,8 +19,8 @@ export interface IJobProps {
   city?: string
   salaryRange?: SalaryRange
   status?: JobStatus
-  viewsCount: number
-  createdAt: Date 
+  viewsCount?: number
+  createdAt?: Date 
 }
 
 export class Job {
@@ -56,7 +56,7 @@ export class Job {
 
   publish(): void {
     if(this._status === 'closed') {
-      throw new BadRequestError(JOB_MESSAGES.CLOSED_CANNOT_BE_REPUBLISHED);
+      throw new BadRequestError(JOB_MESSAGES.CLOSED_CANNOT_BE_REPUBLISHED); 
     };
     this._status = 'active'
   };
