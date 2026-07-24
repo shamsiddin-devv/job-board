@@ -69,8 +69,11 @@ export const JOB_MESSAGES = {
   JOB_CREATED: 'Job created successfully.',
   JOB_UPDATED: 'Job updated successfully.',
   JOB_DELETED: 'Job deleted successfully.',
-
+  JOB_CLOSED_SUCCESS: 'Job closed successfully.',
+  
   JOB_NOT_FOUND: 'Job not found.',
+
+  STATUS_REQUIRED: 'Status is required.',
 
   TITLE_REQUIRED: 'Job title is required.',
   DESCRIPTION_REQUIRED: 'Job description is required.',

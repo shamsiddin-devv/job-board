@@ -3,7 +3,6 @@ import { AUTH_MESSAGES, JOB_MESSAGES } from 'src/domain/constants/message';
 import { ForbiddenError } from 'src/domain/errors/ForbiddenError';
 import { NotFoundError } from 'src/domain/errors/NotFoundError';
 import { IJobRepository } from 'src/domain/repositories/IJobRespository';
-import { IUserRepository } from 'src/domain/repositories/IUserRepository';
 
 export class UpdateJobUseCase {
   constructor(
