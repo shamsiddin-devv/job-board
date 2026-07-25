@@ -63,6 +63,7 @@ export const USER_MESSAGES = {
   ALREADY_ACTIVE: 'User is already active.',
 
   USER_INACTIVE: 'Your account is inactive.',
+  USER_NOT_FOUND: 'User not found.'
 } as const;
 
 export const JOB_MESSAGES = {
@@ -116,6 +117,13 @@ export const APPLICATION_MESSAGES = {
   APPLICATION_ALREADY_ACCEPTED: 'Application has already been accepted.',
   REJECTED_CANNOT_BE_ACCEPTED: 'A rejected application cannot be accepted.',
 
+  NOT_PERMISSION: 'You do not have permission to manage this application.',
+
+  ONLY_WORKER_CAN_SUBMIY_APPLICATION: 'Only workers can submit applications.',
+  CANNOT_APPLY_OWN_JOB: 'You cannot apply to your own job posting.',
+
+  CANNOT_VIEW_APPLICATION: 'You cannot view applications for this vacancy.',
+
   APPLICATION_ALREADY_REJECTED: 'Application has already been rejected.',
   ACCEPTED_CANNOT_BE_REJECTED: 'An accepted application cannot be rejected.',
 } as const;
@@ -131,6 +139,10 @@ export const COMPANY_MESSAGES = {
 
   COMPANY_ALREADY_VERIFIED: 'Company has already been verified.',
   COMPANY_NOT_VERIFIED: 'Company is not verified.',
+  COMPANY_PROFILE_ALREADY_EXIST: 'Company profile already exist.',
+  
+  ONLY_CAN_CREATE_COMPANY: 'Only users with the Company role create profiles.',
+
 } as const;
 
 export const CATEGORY_MESSAGES = {
@@ -151,8 +163,12 @@ export const RESUME_MESSAGES = {
   RESUME_ALREADY_ACTIVE: 'Resume is already active.',
   RESUME_ALREADY_CLOSED: 'Resume is already closed.',
   RESUME_ALREADY_DRAFT: 'Resume is already in draft.',
+  RESUME_ALREADY_EXIST: 'Resume is already exist',
 
   CLOSED_RESUME_CANNOT_BE_DRAFTED: 'A closed resume cannot be moved to draft.',
+  ONLY_WORKER_CAN_CREATE_RESUME: 'Only worker can create a resume.',
+  
+  
 } as const;
 
 export const SAVED_JOB_MESSAGES = {
@@ -161,6 +177,8 @@ export const SAVED_JOB_MESSAGES = {
 
   SAVED_SUCCESSFULLY: 'Job saved successfully.',
   REMOVED_SUCCESSFULLY: 'Saved job removed successfully.',
+
+  SAVED_VACANCY_NOT_FOUND: 'Saved vacancy not found.',
 
   JOB_ALREADY_SAVED: 'Job has already been saved.',
   JOB_NOT_SAVED: 'Job is not saved.',
@@ -191,4 +209,7 @@ export const NOTIFICATION_MESSAGES = {
 
   NOTIFICATION_NOT_FOUND: 'Notification not found.',
   NOTIFICATION_ALREADY_READ: 'Notification has already been marked as read.',
+
+  ALL_NOTIFICATION_MARKED: 'All notifications have been marked as read.',
+  NOT_PERMISSION: 'You do not have permission to edit this notification.',
 } as const;

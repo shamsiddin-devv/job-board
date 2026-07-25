@@ -1,6 +1,7 @@
 import { APPLICATION_MESSAGES, JOB_MESSAGES } from "src/domain/constants/message"
 import { Application } from "src/domain/entities/Application"
 import { ConflictError } from "src/domain/errors/ConflictError"
+import { ForbiddenError } from "src/domain/errors/ForbiddenError"
 import { NotFoundError } from "src/domain/errors/NotFoundError"
 import { UnauthorizedError } from "src/domain/errors/UnauthorizedError"
 import { IApplicationRepository } from "src/domain/repositories/IApplicationRepository"
@@ -21,9 +22,9 @@ export class ApplyToJobUseCase {
  
   async execute(jobId: string, applicantId: string, dto: ApplyToJobDto) {
     const applicant = await this.userRepo.findById(applicantId)
-    if (!applicant) throw new NotFoundError('Foydalanuvchi')
+    if (!applicant) throw new NotFoundError(APPLICATION_MESSAGES.APPLICATION_NOT_FOUND)
     if (!applicant.isWorker())
-      throw new UnauthorizedError('Faqat workerlar ariza topshira oladi')
+      throw new ForbiddenError(APPLICATION_MESSAGES.ONLY_WORKER_CAN_SUBMIY_APPLICATION)
  
     const job = await this.jobRepo.findById(jobId)
     if (!job) throw new NotFoundError(JOB_MESSAGES.JOB_NOT_FOUND)
@@ -32,7 +33,7 @@ export class ApplyToJobUseCase {
       throw new ConflictError(JOB_MESSAGES.JOB_ALREADY_CLOSED)
  
     if (job.userId === applicantId)
-      throw new UnauthorizedError('O\'z e\'loningizga ariza bera olmaysiz')
+      throw new ForbiddenError(APPLICATION_MESSAGES.CANNOT_APPLY_OWN_JOB);
  
     const existing = await this.applicationRepo.findByJobAndApplicant(
       jobId,

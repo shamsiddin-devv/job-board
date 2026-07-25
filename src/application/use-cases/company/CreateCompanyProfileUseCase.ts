@@ -1,18 +1,11 @@
+import { CreateCompanyDto } from "src/application/dto/company/CreateCompanyDto"
+import { COMPANY_MESSAGES, USER_MESSAGES } from "src/domain/constants/message"
 import { Company } from "src/domain/entities/Company"
 import { ConflictError } from "src/domain/errors/ConflictError"
+import { ForbiddenError } from "src/domain/errors/ForbiddenError"
 import { NotFoundError } from "src/domain/errors/NotFoundError"
-import { UnauthorizedError } from "src/domain/errors/UnauthorizedError"
 import { ICompanyRepository } from "src/domain/repositories/ICompanyRepository"
 import { IUserRepository } from "src/domain/repositories/IUserRepository"
-
-export interface CreateCompanyDto {
-  name: string
-  description?: string
-  website?: string
-  industry?: string
-  size?: string
-  city?: string
-}
  
 export class CreateCompanyProfileUseCase {
   constructor(
@@ -22,12 +15,12 @@ export class CreateCompanyProfileUseCase {
  
   async execute(userId: string, dto: CreateCompanyDto) {
     const user = await this.userRepo.findById(userId)
-    if (!user) throw new NotFoundError('Foydalanuvchi')
+    if (!user) throw new NotFoundError(USER_MESSAGES.USER_NOT_FOUND);
     if (!user.isCompany())
-      throw new UnauthorizedError('Faqat company rolidagi userlar profil yaratadi')
+      throw new ForbiddenError(COMPANY_MESSAGES.ONLY_CAN_CREATE_COMPANY);
  
     const existing = await this.companyRepo.findByUserId(userId)
-    if (existing) throw new ConflictError('Kompaniya profili allaqachon mavjud')
+    if (existing) throw new ConflictError(COMPANY_MESSAGES.COMPANY_PROFILE_ALREADY_EXIST)
  
     const company = new Company({
       userId,

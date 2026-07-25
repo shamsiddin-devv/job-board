@@ -1,8 +1,9 @@
 import { CreateResumeDto } from 'src/application/dto/resume/CreateResumeDto';
+import { RESUME_MESSAGES, USER_MESSAGES } from 'src/domain/constants/message';
 import { Resume } from 'src/domain/entities/Resume';
 import { ConflictError } from 'src/domain/errors/ConflictError';
+import { ForbiddenError } from 'src/domain/errors/ForbiddenError';
 import { NotFoundError } from 'src/domain/errors/NotFoundError';
-import { UnauthorizedError } from 'src/domain/errors/UnauthorizedError';
 import { IResumeRepository } from 'src/domain/repositories/IResumeRepository';
 import { IUserRepository } from 'src/domain/repositories/IUserRepository';
 import { SalaryRange } from 'src/domain/value-objects/Salary';
@@ -15,12 +16,12 @@ export class CreateResumeUseCase {
 
   async execute(userId: string, dto: CreateResumeDto) {
     const user = await this.userRepo.findById(userId);
-    if (!user) throw new NotFoundError('Foydalanuvchi');
+    if (!user) throw new NotFoundError(USER_MESSAGES.USER_NOT_FOUND);
     if (!user.isWorker())
-      throw new UnauthorizedError('Faqat workerlar CV yarata oladi');
+      throw new ForbiddenError(RESUME_MESSAGES.ONLY_WORKER_CAN_CREATE_RESUME);
 
     const existing = await this.resumeRepo.findByUserId(userId);
-    if (existing) throw new ConflictError('CV allaqachon mavjud');
+    if (existing) throw new ConflictError(RESUME_MESSAGES.RESUME_ALREADY_EXIST);
 
     const salaryRange =
       dto.salaryMin || dto.salaryMax

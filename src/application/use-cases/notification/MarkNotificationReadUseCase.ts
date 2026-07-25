@@ -1,5 +1,6 @@
+import { NOTIFICATION_MESSAGES } from "src/domain/constants/message"
+import { ForbiddenError } from "src/domain/errors/ForbiddenError"
 import { NotFoundError } from "src/domain/errors/NotFoundError"
-import { UnauthorizedError } from "src/domain/errors/UnauthorizedError"
 import { INotificationRepository } from "src/domain/repositories/INotificationRepository"
 
 export class MarkNotificationReadUseCase {
@@ -7,10 +8,10 @@ export class MarkNotificationReadUseCase {
  
   async execute(notificationId: string, userId: string) {
     const notification = await this.notificationRepo.findById(notificationId)
-    if (!notification) throw new NotFoundError('Bildirishnoma')
+    if (!notification) throw new NotFoundError(NOTIFICATION_MESSAGES.NOTIFICATION_NOT_FOUND)
  
     if (notification.userId !== userId)
-      throw new UnauthorizedError('Bu bildirishnoma sizga tegishli emas')
+      throw new ForbiddenError(NOTIFICATION_MESSAGES.NOT_PERMISSION);
  
     notification.markAsRead()
  

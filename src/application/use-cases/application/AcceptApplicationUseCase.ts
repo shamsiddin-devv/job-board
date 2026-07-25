@@ -1,4 +1,5 @@
-import { JOB_MESSAGES } from "src/domain/constants/message"
+import { APPLICATION_MESSAGES, JOB_MESSAGES } from "src/domain/constants/message"
+import { ForbiddenError } from "src/domain/errors/ForbiddenError"
 import { NotFoundError } from "src/domain/errors/NotFoundError"
 import { UnauthorizedError } from "src/domain/errors/UnauthorizedError"
 import { IApplicationRepository } from "src/domain/repositories/IApplicationRepository"
@@ -12,13 +13,12 @@ export class AcceptApplicationUseCase {
  
   async execute(applicationId: string, requesterId: string) {
     const application = await this.applicationRepo.findById(applicationId)
-    if (!application) throw new NotFoundError('Ariza')
+    if (!application) throw new NotFoundError(APPLICATION_MESSAGES.APPLICATION_NOT_FOUND);
  
-    // Faqat shu vakansiya egasi qabul qila oladi
     const job = await this.jobRepo.findById(application.jobId)
     if (!job) throw new NotFoundError(JOB_MESSAGES.JOB_NOT_FOUND)
     if (job.userId !== requesterId)
-      throw new UnauthorizedError('Bu arizani boshqarish huquqingiz yo\'q')
+      throw new ForbiddenError(APPLICATION_MESSAGES.NOT_PERMISSION);
  
     application.accept()
  

@@ -1,4 +1,5 @@
-import { JOB_MESSAGES } from "src/domain/constants/message"
+import { APPLICATION_MESSAGES, JOB_MESSAGES } from "src/domain/constants/message"
+import { ForbiddenError } from "src/domain/errors/ForbiddenError"
 import { NotFoundError } from "src/domain/errors/NotFoundError"
 import { UnauthorizedError } from "src/domain/errors/UnauthorizedError"
 import { IApplicationRepository } from "src/domain/repositories/IApplicationRepository"
@@ -14,7 +15,7 @@ export class GetApplicantsUseCase {
     const job = await this.jobRepo.findById(jobId)
     if (!job) throw new NotFoundError(JOB_MESSAGES.USER_NOT_FOUND)
     if (job.userId !== requesterId)
-      throw new UnauthorizedError('Bu vakansiya arizalarini ko\'ra olmaysiz')
+      throw new ForbiddenError(APPLICATION_MESSAGES.CANNOT_VIEW_APPLICATION);
  
     return await this.applicationRepo.findAll({ jobId, page, limit })
   }

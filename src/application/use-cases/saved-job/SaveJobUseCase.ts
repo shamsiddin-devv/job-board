@@ -12,7 +12,7 @@ export class SaveJobUseCase {
  
   async execute(userId: string, jobId: string) {
     const job = await this.jobRepo.findById(jobId)
-    if (!job) throw new NotFoundError('Vakansiya')
+    if (!job) throw new NotFoundError('Vakansiya topilmadi')
  
     const existing = await this.savedJobRepo.findByUserAndJob(userId, jobId)
     if (existing) throw new ConflictError('Allaqachon saqlangan')
