@@ -6,6 +6,7 @@ import { Email } from 'src/domain/value-objects/Email';
 import { NotFoundError } from 'src/domain/errors/NotFoundError';
 import { AUTH_MESSAGES } from 'src/domain/constants/message';
 import { RefreshToken } from 'src/domain/entities/RefreshToken';
+import { VerifyOtpUseCaseDto } from 'src/application/dto/auth/VerifyOtpUseCaseDto';
 
 export class ConfirmRegistrationUseCase {
   constructor(
@@ -15,13 +16,13 @@ export class ConfirmRegistrationUseCase {
     private readonly refreshTokenRepo: IRefreshTokenRepository,
   ) {}
 
-  async execute(emailStr: string, code: string) {
-    const verifyEmail = new Email(emailStr);
+  async execute(dto: VerifyOtpUseCaseDto) {
+    const verifyEmail = new Email(dto.emailStr);
 
     const user = await this.userRepo.findByEmail(verifyEmail.toString());
     if (!user) throw new NotFoundError(AUTH_MESSAGES.USER_NOT_FOUND);
 
-    await this.verifyOtp.execute(user.email.toString(), code);
+    await this.verifyOtp.execute(dto);
     user.markAsVerified();
     await this.userRepo.update(user.id!, user);
 

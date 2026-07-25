@@ -44,6 +44,9 @@ export const AUTH_MESSAGES = {
   REFRESH_TOKEN_EXPIRED_OR_REVOKED: 'Refresh token expired or revoked.',
   REFRESH_SUCCESS: 'Access token refreshed successfully.',
 
+  TOKEN_NOT_FOUND: 'Token not found.',
+  TOKEN_INVALID_OR_EXPIRED: 'Token is invalid or has expired',
+
   // Authorization
   UNAUTHORIZED: 'Unauthorized.',
   FORBIDDEN: 'You do not have permission to perform this action.',

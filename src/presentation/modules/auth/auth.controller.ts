@@ -6,6 +6,9 @@ import { LoginDto } from './dto/login.dto';
 import { OAuthLoginUseCase } from 'src/application/use-cases/auth/OAuthLoginUsecCase';
 import type { Request, Response } from 'express';
 import { LogoutUseCase } from 'src/application/use-cases/auth/LogoutUseCase';
+import { SendOtpUseCase } from 'src/application/use-cases/auth/SendOtpUseCase';
+import { SendOtpDto, VerifyOtpDto } from './dto/otp.dto';
+import { ConfirmRegistrationUseCase } from 'src/application/use-cases/auth/ConfirmRegistrationUseCase';
 
 @Controller('auth')
 export class AuthController {
@@ -14,19 +17,31 @@ export class AuthController {
     private readonly oAuthLoginUseCase: OAuthLoginUseCase,
     private readonly registerUseCase: RegisterUseCase,
     private readonly logoutUseCase: LogoutUseCase,
+    private readonly sendOtpUseCase: SendOtpUseCase,
+    private readonly confirmRegistration: ConfirmRegistrationUseCase
   ) {};
 
-  @Post('auth/register')
+  @Post('register')
   async register(@Body() dto: RegisterDto) {
     await this.registerUseCase.execute(dto);
   };
 
-  @Post('auth/login')
+  @Post('send/otp')
+  async sendOtp(@Body() dto: SendOtpDto) {
+    await this.sendOtpUseCase.execute(dto.email);
+  };
+
+  @Post('verify')
+  async verifyOtp(@Body() dto: VerifyOtpDto) {
+    await this.confirmRegistration.execute(dto);
+  };
+
+  @Post('login')
   async login(@Body() dto: LoginDto) {
     await this.loginUseCase.execute(dto)
   };
 
-  @Post('auth/logout')
+  @Post('logout')
   async logout(@Req() req: Request, @Res({passthrough: true}) res: Response) {
     const refreshToken = req.cookies?.refreshToken;
 
@@ -39,7 +54,7 @@ export class AuthController {
     });
   };
 
-  
+
 
   // @Get('auth/google')
   // async google() {
