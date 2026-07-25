@@ -16,7 +16,7 @@ export class VerifyOtpUseCase {
 
     if(savedCode !== inputCode) throw new BadRequestError(AUTH_MESSAGES.OTP_INVALID);
 
-    await this.otpRepo.remove(email.toString());
+    await this.otpRepo.delete(email.toString());
 
     return true;
   };

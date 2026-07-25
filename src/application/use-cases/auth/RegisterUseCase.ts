@@ -2,7 +2,7 @@ import { RegisterDto } from 'src/application/dto/auth/RegisterDto';
 import { User } from 'src/domain/entities/User';
 import { ConflictError } from 'src/domain/errors/ConflictError';
 import { IUserRepository } from 'src/domain/repositories/IUserRepository';
-import { IHashRepository } from 'src/domain/services/IHashService';
+import { IHashService } from 'src/domain/services/IHashService';
 import { Email } from 'src/domain/value-objects/Email';
 import { SendOtpUseCase } from './SendOtpUseCase';
 import { AUTH_MESSAGES } from 'src/domain/constants/message';
@@ -10,7 +10,7 @@ import { AUTH_MESSAGES } from 'src/domain/constants/message';
 export class RegisterUseCase {
   constructor(
     private readonly userRepo: IUserRepository,
-    private readonly hashService: IHashRepository,
+    private readonly hashService: IHashService,
     private readonly sendOtpUseCase: SendOtpUseCase
   ) {}
 
@@ -24,7 +24,7 @@ export class RegisterUseCase {
 
     const user = new User({
       email,
-      name: dto.name,
+      fullName: dto.fullName,
       role: dto.role
     });
 

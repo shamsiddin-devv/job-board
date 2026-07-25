@@ -31,6 +31,9 @@ export const AUTH_MESSAGES = {
   OTP_RESENT: 'A new verification code has been sent.',
   OTP_NOT_FOUND_OR_EXPIRED: 'OTP not found or expired.',
 
+  REGISTERED: (providerName) => `This account was registered via ${providerName}`,
+  REGISTERED_WITH_PROVIDER: 'This email is registered with a password. You cannot sign in via Google or GitHub.',
+
   // Token
   ACCESS_TOKEN_EXPIRED: 'Access token has expired.',
   REFRESH_TOKEN_REQUIRED: 'Refresh token is required.',
@@ -55,7 +58,7 @@ export const AUTH_MESSAGES = {
 } as const;
 
 export const USER_MESSAGES = {
-  NAME_REQUIRED: 'Name is required.',
+  FULL_NAME_REQUIRED: 'Full name is required.',
   USER_ID_REQUIRED: 'User ID is required.',
 
   ALREADY_APPROVED: 'User has already been approved.',

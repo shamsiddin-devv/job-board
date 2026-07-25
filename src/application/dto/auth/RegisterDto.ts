@@ -2,7 +2,7 @@
 
 export interface RegisterDto {
   email: string,
-  name: string,
+  fullName: string,
   phone?: string,
   password: string,
   role: 'company' | 'worker',

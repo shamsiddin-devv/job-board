@@ -47,7 +47,7 @@ export class ConfirmRegistrationUseCase {
       user: {
         id: user.id,
         email: user.email.toString(),
-        name: user.name,
+        fullName: user.fullName,
         role: user.role,
       },
     };

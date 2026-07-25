@@ -23,6 +23,8 @@ export class LoginUseCase {
     const exist = await this.userRepo.findByEmail(verifyEmail.toString());
     if(!exist) throw new NotFoundError(AUTH_MESSAGES.USER_NOT_FOUND);
 
+    if (exist.isOAuthUser()) throw new UnauthorizedError(AUTH_MESSAGES.REGISTERED(exist.authProvider))
+
     const passwordHash = await this.userRepo.findPasswordHashByUserId(exist.id!);
 
     const comparePassword = await this.hashService.compare(dto.password, passwordHash!);
@@ -48,6 +50,7 @@ export class LoginUseCase {
     return {
       message: AUTH_MESSAGES.LOGIN_SUCCESS,
       accessToken,
+      refreshToken
     };
   };
 };

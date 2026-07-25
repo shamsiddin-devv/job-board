@@ -13,7 +13,7 @@ export class LogoutUseCase {
 
   async execute(refreshToken: string) {    
     const existToken = await this.refreshTokenRepo.findByToken(refreshToken);
-    if(!existToken) throw new UnauthorizedError(AUTH_MESSAGES.REFRESH_TOKEN_INVALID);
+    if(!existToken) throw new UnauthorizedError(AUTH_MESSAGES.REFRESH_TOKEN_NOT_FOUND);
 
     if(!existToken.isValid()) throw new UnauthorizedError(AUTH_MESSAGES.REFRESH_TOKEN_EXPIRED_OR_REVOKED);
 

@@ -98,98 +98,38 @@ Nest is an MIT-licensed open source project. It can grow thanks to the sponsors 
 Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
 
 
-application/use-cases/
-├── auth/
-│   ├── RegisterUseCase.ts        — ro'yxatdan o'tish
-│   ├── LoginUseCase.ts           — kirish
-│   ├── SendOtpUseCase.ts         — OTP kod yuborish
-│   ├── VerifyOtpUseCase.ts       — OTP kodni tasdiqlash
-│   ├── RefreshTokenUseCase.ts    — yangi access token olish
-│   └── LogoutUseCase.ts          — chiqish, refresh token bekor qilish
-│
-├── job/
-│   ├── PostJobUseCase.ts         — vakansiya yaratish
-│   ├── UpdateJobUseCase.ts       — vakansiyani tahrirlash
-│   ├── CloseJobUseCase.ts        — vakansiyani yopish
-│   ├── SearchJobsUseCase.ts      — filter bilan qidirish
-│   └── GetJobByIdUseCase.ts      — bitta vakansiyani ko'rish (+ view count)
-│
-├── application/                  — "Application" entity uchun (ariza)
-│   ├── ApplyToJobUseCase.ts      — ariza topshirish
-│   ├── AcceptApplicationUseCase.ts — arizani qabul qilish
-│   └── RejectApplicationUseCase.ts — arizani rad etish
-│
-├── company/
-│   ├── CreateCompanyUseCase.ts   — kompaniya profili yaratish
-│   ├── UpdateCompanyUseCase.ts   — profilni tahrirlash
-│   └── VerifyCompanyUseCase.ts   — admin tomonidan tasdiqlash
-│
-├── resume/
-│   ├── CreateResumeUseCase.ts    — CV yaratish
-│   └── UploadResumeFileUseCase.ts — CV faylini yuklash
-│
-├── saved-job/
-│   ├── SaveJobUseCase.ts         — vakansiyani saqlash
-│   └── UnsaveJobUseCase.ts       — saqlashdan olib tashlash
-│
-└── notification/
-    └── MarkNotificationReadUseCase.ts — o'qilgan deb belgilash
-
-
-
 src/
-├── domain/                    # sof TypeScript, import yo'q
-│   ├── entities/
-│   │   ├── Job.ts
-│   │   ├── User.ts
-│   │   ├── Application.ts
-│   │   └── Company.ts
-│   ├── value-objects/
-│   │   ├── Email.ts
-│   │   ├── Salary.ts
-│   │   └── Location.ts
-│   └── repositories/          # faqat interface
-│       ├── IJobRepository.ts
-│       ├── IUserRepository.ts
-│       └── IApplicationRepository.ts
+├── domain/
+├── application/
+├── infrastructure/
 │
-├── application/               # biznes mantiq
-│   ├── use-cases/
-│   │   ├── job/
-│   │   │   ├── PostJobUseCase.ts
-│   │   │   ├── CloseJobUseCase.ts
-│   │   │   └── SearchJobsUseCase.ts
-│   │   ├── user/
-│   │   │   ├── RegisterUseCase.ts
-│   │   │   └── LoginUseCase.ts
-│   │   └── application/
-│   │       └── ApplyToJobUseCase.ts
-│   └── dto/                   # input/output typelari
-│       ├── job.dto.ts
-│       └── user.dto.ts
-│
-├── infrastructure/            # haqiqiy texnologiyalar
-│   ├── db/
-│   │   ├── prisma/
-│   │   │   └── schema.prisma
-│   │   ├── PrismaJobRepository.ts
-│   │   └── PrismaUserRepository.ts
-│   ├── storage/
-│   │   └── CloudinaryStorage.ts
-│   └── auth/
-│       ├── JwtService.ts
-│       └── BcryptHashService.ts
-│
-├── presentation/              # HTTP qatlami
-│   ├── controllers/
-│   │   ├── JobController.ts
-│   │   └── UserController.ts
-│   ├── middlewares/
-│   │   ├── auth.middleware.ts
-│   │   └── error.middleware.ts
-│   └── routes/
-│       ├── job.routes.ts
-│       └── user.routes.ts
-│
-├── container.ts               # hammani birga bog'laydi
-└── main.ts                    # server ishga tushadi  
+└── presentation/
+    ├── guards/
+    │   ├── jwt-auth.guard.ts
+    │   └── roles.guard.ts
+    │
+    ├── filters/
+    │   └── domain-exception.filter.ts
+    │
+    └── modules/
+        ├── auth/
+        │   ├── auth.controller.ts
+        │   ├── auth.module.ts
+        │   └── dto/
+        │       ├── register.dto.ts
+        │       └── login.dto.ts
+        │
+        ├── job/
+        │   ├── job.controller.ts
+        │   ├── job.module.ts
+        │   └── dto/
+        │
+        ├── application/
+        │   ├── application.controller.ts
+        │   ├── application.module.ts
+        │   └── dto/
+        │
+        ├── company/
+        ├── notification/
+        ├── resume/
+        └── saved-job/

@@ -58,7 +58,7 @@ export class PrismaUserRepository implements IUserRepository {
     return new User({
       id: user.id,
       email: new Email(user.email),
-      name: user.name,
+      fullName: user.fullName,
       phone: user.phone ?? undefined,
       role: user.role.toLowerCase() as any,
       avatarUrl: user.avatarUrl ?? undefined,
@@ -72,7 +72,7 @@ export class PrismaUserRepository implements IUserRepository {
     return {
       id: user.id,
       email: user.email.toString(),
-      name: user.name,
+      fullName: user.fullName,
       phone: user.phone,
       role: user.role.toUpperCase(),
       avatarUrl: user.avatarUrl,
