@@ -3,7 +3,7 @@ export interface IUploadResult {
   publicId: string;
 }
 
-export interface IStorageRepository {
+export interface IStorageService {
   upload(file: Buffer, folder: string): Promise<IUploadResult>
   delete(publicId: string): Promise<void>
 }

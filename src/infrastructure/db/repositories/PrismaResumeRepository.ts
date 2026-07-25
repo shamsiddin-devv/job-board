@@ -1,74 +1,121 @@
-import { Injectable } from "@nestjs/common";
-import { IResumeRepository } from "src/domain/repositories/IResumeRepository";
-import { PrismaService } from "../prisma.service";
-import { Resume } from "src/domain/entities/Resume";
-
+import { Injectable } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
+import { PrismaService } from '../prisma.service';
+import {
+  IResumeRepository,
+  ResumeFilters,
+  ResumeListResult,
+} from 'src/domain/repositories/IResumeRepository';
+import { Resume } from 'src/domain/entities/Resume';
+import { SalaryRange } from 'src/domain/value-objects/Salary';
 
 @Injectable()
 export class PrismaResumeRepository implements IResumeRepository {
-  constructor(private readonly prismaService: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) {}
 
-  async findById(resumeId: string): Promise<Resume | null> {
-    const resume = await this.prismaService.resume.findUnique({where: {id: resumeId}});
-    if(!resume) return null;
-    return this.toDomain(resume);
-  };
+  async findById(id: string): Promise<Resume | null> {
+    const row = await this.prisma.resume.findUnique({ where: { id } });
+    if (!row) return null;
+    return this.toDomain(row);
+  }
 
   async findByUserId(userId: string): Promise<Resume | null> {
-    const userResume = await this.prismaService.resume.findFirst({where: {userId}});
-    if(!userResume) return null
-    return this.toDomain(userResume);
-  };
+    const row = await this.prisma.resume.findFirst({ where: { userId } });
+    if (!row) return null;
+    return this.toDomain(row);
+  }
 
-  async findAll(): Promise<Resume[]> {
-    const resumes = await this.prismaService.resume.findMany();
-    return resumes.map((resume) => this.toDomain(resume));
-  };
+  async findAll(filters: ResumeFilters): Promise<ResumeListResult> {
+    const page = filters.page ?? 1;
+    const limit = filters.limit ?? 20;
 
-  async create(data: Resume): Promise<Resume> {
-    const row = await this.prismaService.resume.create({
-      data: this.toPersistence(data)
+    const where: Prisma.ResumeWhereInput = { status: 'ACTIVE' };
+
+    if (filters.city) {
+      where.city = { equals: filters.city, mode: 'insensitive' };
+    }
+
+    if (filters.salaryMin !== undefined) {
+      where.salaryMin = { gte: filters.salaryMin };
+    }
+
+    if (filters.search) {
+      where.OR = [
+        { title: { contains: filters.search, mode: 'insensitive' } },
+        { summary: { contains: filters.search, mode: 'insensitive' } },
+      ];
+    }
+
+    const [rows, total] = await Promise.all([
+      this.prisma.resume.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+      this.prisma.resume.count({ where }),
+    ]);
+
+    return {
+      data: rows.map((row) => this.toDomain(row)),
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    };
+  }
+
+  async create(resume: Resume): Promise<Resume> {
+    const row = await this.prisma.resume.create({
+      data: this.toPersistence(resume),
     });
     return this.toDomain(row);
-  };
+  }
 
-  async update(resumeId: string, data: Resume): Promise<Resume> {
-    const row = await this.prismaService.resume.update({
-      where: {id: resumeId},
-      data: this.toPersistence(data),
+  async update(id: string, resume: Resume): Promise<Resume> {
+    const row = await this.prisma.resume.update({
+      where: { id },
+      data: this.toPersistence(resume),
     });
     return this.toDomain(row);
-  };
+  }
 
-  async remove(resumeId: string): Promise<void> {
-    await this.prismaService.resume.delete({where: {id: resumeId}});
-  };
+  async delete(id: string): Promise<void> {
+    await this.prisma.resume.delete({ where: { id } });
+  }
 
-  private toDomain(resume: any): Resume {
+  private toDomain(row: any): Resume {
     return new Resume({
-      id: resume.id,
+      id: row.id,
+      userId: row.userId,
+      title: row.title,
+      summary: row.summary ?? undefined,
+      city: row.city ?? undefined,
+      salaryRange:
+        row.salaryMin || row.salaryMax
+          ? new SalaryRange({
+              min: row.salaryMin ?? undefined,
+              max: row.salaryMax ?? undefined,
+              currency: row.currency,
+            })
+          : undefined,
+      fileUrl: row.fileUrl ?? undefined,
+      status: row.status.toLowerCase(),
+      createdAt: row.createdAt,
+    });
+  }
+
+  private toPersistence(resume: Resume): any {
+    return {
       userId: resume.userId,
       title: resume.title,
       summary: resume.summary,
       city: resume.city,
-      salaryRange: resume.salaryRange,
+      salaryMin: resume.salaryRange?.min ?? null,
+      salaryMax: resume.salaryRange?.max ?? null,
+      currency: resume.salaryRange?.currency ?? 'UZS',
       fileUrl: resume.fileUrl,
-      status: resume.status,
-      createdAt: resume.createdAt
-    });
-  };
-
-  private toPersistence(resume: Resume): any {
-    return {
-      id: resume.id,
-      userId: resume.userId,
-      ttile: resume.title,
-      summary: resume.summary,
-      city: resume.city,
-      salaryRange: resume.salaryRange,
-      fileUrl: resume.fileUrl,
-      status: resume.status,
-      createdAt: resume.createdAt
+      status: resume.status.toUpperCase(),
     };
-  };
+  }
 }
