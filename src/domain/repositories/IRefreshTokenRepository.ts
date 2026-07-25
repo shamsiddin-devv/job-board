@@ -7,5 +7,5 @@ export interface IRefreshTokenRepository {
   findAll(): Promise<RefreshToken[]>
   create(data: RefreshToken): Promise<RefreshToken>
   update(tokenId: string, data: RefreshToken): Promise<RefreshToken>
-  remove(tokenId: string): Promise<void>
+  delete(tokenId: string): Promise<void>
 };

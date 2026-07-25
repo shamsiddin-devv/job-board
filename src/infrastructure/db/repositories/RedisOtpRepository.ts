@@ -14,7 +14,7 @@ export class RedisOtpRepository implements IOtpRepository {
     return this.cacheService.get(`otp:${email}`)
   };
 
-  async remove(email: string): Promise<void> {
+  async delete(email: string): Promise<void> {
     await this.cacheService.delete(`otp:${email}`);
   };
 };
