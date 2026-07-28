@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Post, Req, Res } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Post,
+  Req,
+  Res,
+  UseGuards,
+} from '@nestjs/common';
 import { LoginUseCase } from 'src/application/use-cases/auth/LoginUseCase';
 import { RegisterUseCase } from 'src/application/use-cases/auth/RegisterUseCase';
 import { RegisterDto } from './dto/register.dto';
@@ -9,6 +17,9 @@ import { LogoutUseCase } from 'src/application/use-cases/auth/LogoutUseCase';
 import { SendOtpUseCase } from 'src/application/use-cases/auth/SendOtpUseCase';
 import { SendOtpDto, VerifyOtpDto } from './dto/otp.dto';
 import { ConfirmRegistrationUseCase } from 'src/application/use-cases/auth/ConfirmRegistrationUseCase';
+import { AuthGuard } from '@nestjs/passport';
+import { CompleteOAuthRegistrationUseCase } from 'src/application/use-cases/auth/CompleteOAuthRegistrationUseCase';
+import type { CompleteOAuthDto } from './dto/complete.oauth.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -18,31 +29,51 @@ export class AuthController {
     private readonly registerUseCase: RegisterUseCase,
     private readonly logoutUseCase: LogoutUseCase,
     private readonly sendOtpUseCase: SendOtpUseCase,
-    private readonly confirmRegistration: ConfirmRegistrationUseCase
-  ) {};
+    private readonly confirmRegistration: ConfirmRegistrationUseCase,
+    private readonly completeOAuthUseCase: CompleteOAuthRegistrationUseCase,
+  ) {}
+
+  private setRefreshTokenCookie(res: Response, token: string) {
+    res.cookie('refreshToken', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 30 * 24 * 60 * 60 * 1000,
+    })
+  }
 
   @Post('register')
   async register(@Body() dto: RegisterDto) {
-    await this.registerUseCase.execute(dto);
-  };
+    return this.registerUseCase.execute(dto);
+  }
 
-  @Post('send/otp')
+  @Post('send-otp')
   async sendOtp(@Body() dto: SendOtpDto) {
-    await this.sendOtpUseCase.execute(dto.email);
-  };
+    return this.sendOtpUseCase.execute(dto.email);
+  }
 
   @Post('verify')
   async verifyOtp(@Body() dto: VerifyOtpDto) {
-    await this.confirmRegistration.execute(dto);
-  };
+    return this.confirmRegistration.execute(dto);
+  }
 
   @Post('login')
-  async login(@Body() dto: LoginDto) {
-    await this.loginUseCase.execute(dto)
-  };
+  async login(
+    @Body() dto: LoginDto,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const result = await this.loginUseCase.execute(dto);
+
+    this.setRefreshTokenCookie(res, result.refreshToken);
+
+    return {
+      accessToken: result.accessToken,
+      user: result.user,
+    };
+  }
 
   @Post('logout')
-  async logout(@Req() req: Request, @Res({passthrough: true}) res: Response) {
+  async logout(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
     const refreshToken = req.cookies?.refreshToken;
 
     await this.logoutUseCase.execute(refreshToken);
@@ -52,14 +83,53 @@ export class AuthController {
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
     });
-  };
+  }
 
+  @Get('google')
+  @UseGuards(AuthGuard('google'))
+  async googleAuth() {}
 
+  @Get('google/callback')
+  @UseGuards(AuthGuard('google'))
+  async googleCallback(@Req() req, @Res({ passthrough: true }) res: Response) {
+    const result = await this.oAuthLoginUseCase.execute(req.user);
 
-  // @Get('auth/google')
-  // async google() {
+    if (result.requiresRoleSelection) {
+      return result;
+    }
 
-  // }
+    this.setRefreshTokenCookie(res, result.refreshToken!)
+    return { accessToken: result.accessToken, user: result.user };
+  }
 
+  @Post('complete-oauth')
+  async completeOAuthGoogle(
+    @Body() dto: CompleteOAuthDto,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const result = await this.completeOAuthUseCase.execute(dto);
+    this.setRefreshTokenCookie(res, result.refreshToken);
+    return { accessToken: result.accessToken };
+  }
 
-};
+  @Get('github')
+  @UseGuards(AuthGuard('github'))
+  async githubAuth() {}
+
+  @Get('github/callback')
+  @UseGuards(AuthGuard('github'))
+  async githubCallback(@Req() req, @Res({ passthrough: true }) res: Response) {
+    const result = await this.oAuthLoginUseCase.execute(req.user);
+
+    if (result.requiresRoleSelection) {
+      return result;
+    }
+
+    this.setRefreshTokenCookie(res, result.refreshToken!)
+
+    return {
+      accessToken: result.accessToken,
+      user: result.user,
+    };
+  }
+}

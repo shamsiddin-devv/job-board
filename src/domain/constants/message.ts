@@ -10,6 +10,7 @@ export const AUTH_MESSAGES = {
   PHONE_ALREADY_EXISTS: 'Phone number already exists.',
   ACCOUNT_INACTIVE: 'Your account is inactive.',
   ACCOUNT_ALREADY_VERIFIED: 'Your account is already verified.',
+  USER_ALREADY_EXIST: 'User already exist.',
 
   // Credentials
   INVALID_CREDENTIALS: 'Invalid email or password.',

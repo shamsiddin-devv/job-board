@@ -50,7 +50,14 @@ export class LoginUseCase {
     return {
       message: AUTH_MESSAGES.LOGIN_SUCCESS,
       accessToken,
-      refreshToken
+      refreshToken,
+      user: {
+        id: exist.id,
+        email: exist.email.toString(),
+        fullname: exist.fullName,
+        avatarUrl: exist.avatarUrl,
+        role: exist.role
+      } 
     };
   };
 };

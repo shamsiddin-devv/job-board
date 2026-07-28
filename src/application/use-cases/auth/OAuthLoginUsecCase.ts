@@ -21,17 +21,11 @@ export class OAuthLoginUseCase {
     let exist = await this.userRepo.findByEmail(verifyEmail.toString());
 
     if (!exist) {
-      const newUser = new User({
-        email: verifyEmail,
-        fullName: dto.fullName,
-        role: dto.role,
-        avatarUrl: dto.avatarUrl,
-        authProvider: dto.provider,
-        isVerified: true,
-      });
-
-      exist = await this.userRepo.create(newUser, null!);
-    }
+      return {
+        requiresRoleSelection: true,
+        profile: { email: dto.email, name: dto.fullName, avatarUrl: dto.avatarUrl }
+      };
+    };
 
     if (exist.authProvider === 'local') throw new UnauthorizedError(AUTH_MESSAGES.REGISTERED_WITH_PROVIDER);
 
@@ -58,6 +52,13 @@ export class OAuthLoginUseCase {
       message: AUTH_MESSAGES.LOGIN_SUCCESS,
       accessToken,
       refreshToken,
+      user: {
+        id: exist.id,
+        email: exist.email.toString(),
+        fullname: exist.fullName,
+        avatarUrl: exist.avatarUrl,
+        role: exist.role
+      }
     };
   }
 }

@@ -1,4 +1,4 @@
-export class OAuthLoginDto {
+export interface CompleteOAuthRegistrationDto {
   email: string
   fullName: string
   avatarUrl?: string
