@@ -9,11 +9,9 @@ import { IJobRepository } from "src/domain/repositories/IJobRespository";
 export class CloseJobUseCase {
   constructor(private readonly jobRepo: IJobRepository) {};
 
-  async execute(jobId: string, status: JobStatus, userId: string) {
+  async execute(jobId: string, userId: string) {
     const job = await this.jobRepo.findById(jobId);
     if(!job) throw new NotFoundError(JOB_MESSAGES.JOB_NOT_FOUND);
-
-    if(!status.trim()) throw new BadRequestError(JOB_MESSAGES.STATUS_REQUIRED);
 
     if(job.userId !== userId) throw new ForbiddenError(JOB_MESSAGES.JOB_ACCESS_DENIED);
     job.closed();
