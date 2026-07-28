@@ -19,7 +19,13 @@ import { SendOtpDto, VerifyOtpDto } from './dto/otp.dto';
 import { ConfirmRegistrationUseCase } from 'src/application/use-cases/auth/ConfirmRegistrationUseCase';
 import { AuthGuard } from '@nestjs/passport';
 import { CompleteOAuthRegistrationUseCase } from 'src/application/use-cases/auth/CompleteOAuthRegistrationUseCase';
-import type { CompleteOAuthDto } from './dto/complete.oauth.dto';
+import type { CompleteOAuthDto } from './dto/complete-oauth.dto';
+import type { ForgotPasswordDto } from './dto/forgot-password.dto';
+import { ForgotPasswordUseCase } from 'src/application/use-cases/auth/ForgotPasswordUseCase';
+import { VerifyResetPasswordOtpUseCase } from 'src/application/use-cases/auth/VerifyResetPasswordOtpUseCase';
+import { ResetPasswordUseCase } from 'src/application/use-cases/auth/ResetPasswordUseCase';
+import type { VerifyResetPasswordOtpDto } from './dto/verify-reset-password-otp.dto';
+import type { ResetPasswordDto } from './dto/reset-password.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -31,6 +37,9 @@ export class AuthController {
     private readonly sendOtpUseCase: SendOtpUseCase,
     private readonly confirmRegistration: ConfirmRegistrationUseCase,
     private readonly completeOAuthUseCase: CompleteOAuthRegistrationUseCase,
+    private readonly forgotPasswordUseCase: ForgotPasswordUseCase,
+    private readonly verifyResetPasswordOtpUseCase: VerifyResetPasswordOtpUseCase,
+    private readonly resetPasswordUseCase: ResetPasswordUseCase
   ) {}
 
   private setRefreshTokenCookie(res: Response, token: string) {
@@ -85,6 +94,21 @@ export class AuthController {
     });
   }
 
+  @Post('forgot-password')
+  async forgotPassword(@Body() dto: ForgotPasswordDto) {
+    return this.forgotPasswordUseCase.execute(dto.email);
+  };
+
+  @Post('verify-reset-password-otp')
+  async verifyResetPasswordOtp(dto: VerifyResetPasswordOtpDto) {
+    return this.verifyResetPasswordOtpUseCase.execute(dto);
+  };
+
+  @Post('reset-password')
+  async resetPassword(dto: ResetPasswordDto) {
+    return this.resetPasswordUseCase.execute(dto); 
+  };
+  
   @Get('google')
   @UseGuards(AuthGuard('google'))
   async googleAuth() {}
@@ -131,5 +155,6 @@ export class AuthController {
       accessToken: result.accessToken,
       user: result.user,
     };
-  }
+  };
+
 }

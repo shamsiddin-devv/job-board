@@ -18,6 +18,12 @@ export class PrismaRefreshTokenRepository implements IRefreshTokenRepository {
     return this.toDomain(userToken);
   };
 
+  async updateManyByUserId(userId: string, isRevoked: boolean): Promise<void | null> {
+    const user = await this.prismaService.user.findUnique({where: {id: userId}});
+    if(!user) return null;
+    await this.prismaService.refreshToken.updateMany({where: {userId}, data: {isRevoked}})
+  };
+
   async findByToken(token: string): Promise<RefreshToken | null> {
     const existToken = await this.prismaService.refreshToken.findUnique({where: {token}});
     if(!existToken) return null;

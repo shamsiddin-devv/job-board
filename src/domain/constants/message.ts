@@ -45,8 +45,14 @@ export const AUTH_MESSAGES = {
   REFRESH_TOKEN_EXPIRED_OR_REVOKED: 'Refresh token expired or revoked.',
   REFRESH_SUCCESS: 'Access token refreshed successfully.',
 
+  PASSWORD_RESET_SUCCESS: 'Password has been reset successfully.',
+
+  TOKEN_TIME: 'Token validity up to 3 minutes',
+
   TOKEN_NOT_FOUND: 'Token not found.',
   TOKEN_INVALID_OR_EXPIRED: 'Token is invalid or has expired',
+
+  INVALID_VERIFICATION: 'Invalid email or verification code.',
 
   // Authorization
   UNAUTHORIZED: 'Unauthorized.',

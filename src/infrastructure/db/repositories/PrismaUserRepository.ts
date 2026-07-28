@@ -35,6 +35,11 @@ export class PrismaUserRepository implements IUserRepository {
     return userPassword.passwordHash;
   };
 
+  async updateHashPassword(userId: string, hashPassword: string): Promise<void> {
+    await this.findById(userId);
+    await this.prismaService.user.update({where: {id: userId}, data: hashPassword});
+  };
+
   async create(data: User, passwordHash: string): Promise<User> {
     const row = await this.prismaService.user.create({
       data: this.toPersistence(data, passwordHash),
