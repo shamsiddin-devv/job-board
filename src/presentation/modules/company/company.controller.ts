@@ -12,7 +12,7 @@ import { CreateCompanyProfileUseCase } from 'src/application/use-cases/company/C
 import { GetCompanyProfileUseCase } from 'src/application/use-cases/company/GetCompanyProfileUseCase'
 import { UpdateCompanyProfileUseCase } from 'src/application/use-cases/company/UpdateCompanyProfileUseCase'
 import { VerifyCompanyUseCase } from 'src/application/use-cases/company/VerifyCompanyUseCase'
-import { CreateCompanyDto } from './dto/company.dto'
+import { CreateCompanyDto } from './dto/create-company.dto'
 import { JwtAuthGuard } from 'src/presentation/guards/jwt-auth.guard'
 import { UpdateCompanyDto } from './dto/update.dto'
 import { RolesGuard } from 'src/presentation/guards/roles.guard'
