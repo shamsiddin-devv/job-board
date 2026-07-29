@@ -1,8 +1,8 @@
 import { InjectRedis } from "@nestjs-modules/ioredis";
 import Redis from "ioredis";
-import { ICacheRedisInterface } from "src/domain/services/ICacheRedisService";
+import { ICacheRedisService } from "src/domain/services/ICacheRedisService";
 
-export class CacheRedisService implements ICacheRedisInterface {
+export class CacheRedisService implements ICacheRedisService {
   constructor(@InjectRedis() private readonly redis: Redis) {}
 
   async get<T>(key: string): Promise<T | null> {

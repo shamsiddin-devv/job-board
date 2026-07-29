@@ -1,8 +1,9 @@
 import { Module } from "@nestjs/common";
 import { NotificationController } from "./notification.controller";
+import { RepositoriesModule } from "src/infrastructure/repositories.module";
 
 @Module({
-  imports: [],
+  imports: [RepositoriesModule],
   controllers: [NotificationController],
   providers: []
 })

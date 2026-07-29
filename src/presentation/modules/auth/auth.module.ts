@@ -1,8 +1,9 @@
 import { Module } from "@nestjs/common";
 import { AuthController } from "./auth.controller";
+import { RepositoriesModule } from "src/infrastructure/repositories.module";
 
 @Module({
-  imports: [],
+  imports: [RepositoriesModule],
   controllers: [AuthController],
   providers: [],
   exports: [],
