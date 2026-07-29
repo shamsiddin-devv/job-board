@@ -45,6 +45,7 @@ export class ConfirmRegistrationUseCase {
     return {
       message: AUTH_MESSAGES.REGISTER_SUCCESS,
       accessToken,
+      refreshToken,
       user: {
         id: user.id,
         email: user.email.toString(),

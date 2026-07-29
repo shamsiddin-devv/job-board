@@ -6,27 +6,35 @@ import {
   Req,
   Res,
   UseGuards,
-} from '@nestjs/common';
-import { LoginUseCase } from 'src/application/use-cases/auth/LoginUseCase';
-import { RegisterUseCase } from 'src/application/use-cases/auth/RegisterUseCase';
-import { RegisterDto } from './dto/register.dto';
-import { LoginDto } from './dto/login.dto';
-import { OAuthLoginUseCase } from 'src/application/use-cases/auth/OAuthLoginUsecCase';
-import type { Request, Response } from 'express';
-import { LogoutUseCase } from 'src/application/use-cases/auth/LogoutUseCase';
-import { SendOtpUseCase } from 'src/application/use-cases/auth/SendOtpUseCase';
-import { SendOtpDto, VerifyOtpDto } from './dto/otp.dto';
-import { ConfirmRegistrationUseCase } from 'src/application/use-cases/auth/ConfirmRegistrationUseCase';
-import { AuthGuard } from '@nestjs/passport';
-import { CompleteOAuthRegistrationUseCase } from 'src/application/use-cases/auth/CompleteOAuthRegistrationUseCase';
-import type { CompleteOAuthDto } from './dto/complete-oauth.dto';
-import type { ForgotPasswordDto } from './dto/forgot-password.dto';
-import { ForgotPasswordUseCase } from 'src/application/use-cases/auth/ForgotPasswordUseCase';
-import { VerifyResetPasswordOtpUseCase } from 'src/application/use-cases/auth/VerifyResetPasswordOtpUseCase';
-import { ResetPasswordUseCase } from 'src/application/use-cases/auth/ResetPasswordUseCase';
-import type { VerifyResetPasswordOtpDto } from './dto/verify-reset-password-otp.dto';
-import type { ResetPasswordDto } from './dto/reset-password.dto';
+} from '@nestjs/common'
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiExcludeEndpoint,
+} from '@nestjs/swagger'
+import { AuthGuard } from '@nestjs/passport'
+import type { Request, Response } from 'express'
 
+import { LoginUseCase } from 'src/application/use-cases/auth/LoginUseCase'
+import { RegisterUseCase } from 'src/application/use-cases/auth/RegisterUseCase'
+import { OAuthLoginUseCase } from 'src/application/use-cases/auth/OAuthLoginUsecCase'
+import { LogoutUseCase } from 'src/application/use-cases/auth/LogoutUseCase'
+import { SendOtpUseCase } from 'src/application/use-cases/auth/SendOtpUseCase'
+import { ConfirmRegistrationUseCase } from 'src/application/use-cases/auth/ConfirmRegistrationUseCase'
+import { CompleteOAuthRegistrationUseCase } from 'src/application/use-cases/auth/CompleteOAuthRegistrationUseCase'
+import { RefreshTokenUseCase } from 'src/application/use-cases/auth/RefreshTokenUseCase'
+import { ForgotPasswordUseCase } from 'src/application/use-cases/auth/ForgotPasswordUseCase'
+import { ResetPasswordUseCase } from 'src/application/use-cases/auth/ResetPasswordUseCase'
+
+import { RegisterDto } from './dto/register.dto'
+import { LoginDto } from './dto/login.dto'
+import { SendOtpDto, VerifyOtpDto } from './dto/otp.dto'
+import { ForgotPasswordDto } from './dto/forgot-password.dto'
+import { ResetPasswordDto } from './dto/reset-password.dto'
+import { CompleteOAuthDto } from './dto/complete-oauth.dto'
+
+@ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
   constructor(
@@ -37,9 +45,9 @@ export class AuthController {
     private readonly sendOtpUseCase: SendOtpUseCase,
     private readonly confirmRegistration: ConfirmRegistrationUseCase,
     private readonly completeOAuthUseCase: CompleteOAuthRegistrationUseCase,
+    private readonly refreshTokenUseCase: RefreshTokenUseCase,
     private readonly forgotPasswordUseCase: ForgotPasswordUseCase,
-    private readonly verifyResetPasswordOtpUseCase: VerifyResetPasswordOtpUseCase,
-    private readonly resetPasswordUseCase: ResetPasswordUseCase
+    private readonly resetPasswordUseCase: ResetPasswordUseCase,
   ) {}
 
   private setRefreshTokenCookie(res: Response, token: string) {
@@ -51,110 +59,125 @@ export class AuthController {
     })
   }
 
+  @ApiOperation({ summary: 'Ro\'yxatdan o\'tish — OTP avtomatik yuboriladi' })
+  @ApiResponse({ status: 201, description: 'Ro\'yxatdan o\'tildi, kod yuborildi' })
+  @ApiResponse({ status: 409, description: 'Email allaqachon band' })
   @Post('register')
   async register(@Body() dto: RegisterDto) {
-    return this.registerUseCase.execute(dto);
+    return await this.registerUseCase.execute(dto)
   }
 
+  @ApiOperation({ summary: 'Tasdiqlash kodini qayta yuborish' })
+  @ApiResponse({ status: 200, description: 'Kod yuborildi' })
   @Post('send-otp')
   async sendOtp(@Body() dto: SendOtpDto) {
-    return this.sendOtpUseCase.execute(dto.email);
+    return await this.sendOtpUseCase.execute(dto.email)
   }
 
+  @ApiOperation({ summary: 'OTP kodni tasdiqlab, ro\'yxatdan o\'tishni yakunlash' })
+  @ApiResponse({ status: 200, description: 'Tasdiqlandi, token qaytariladi' })
+  @ApiResponse({ status: 400, description: 'Kod noto\'g\'ri yoki muddati tugagan' })
   @Post('verify')
-  async verifyOtp(@Body() dto: VerifyOtpDto) {
-    return this.confirmRegistration.execute(dto);
+  async verifyOtp(
+    @Body() dto: VerifyOtpDto,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const result = await this.confirmRegistration.execute(dto)
+    this.setRefreshTokenCookie(res, result.refreshToken)
+    return { accessToken: result.accessToken, user: result.user }
   }
 
+  @ApiOperation({ summary: 'Email va parol orqali kirish' })
+  @ApiResponse({ status: 200, description: 'Muvaffaqiyatli kirildi' })
+  @ApiResponse({ status: 401, description: 'Email yoki parol noto\'g\'ri' })
   @Post('login')
   async login(
     @Body() dto: LoginDto,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const result = await this.loginUseCase.execute(dto);
-
-    this.setRefreshTokenCookie(res, result.refreshToken);
-
-    return {
-      accessToken: result.accessToken,
-      user: result.user,
-    };
+    const result = await this.loginUseCase.execute(dto)
+    this.setRefreshTokenCookie(res, result.refreshToken)
+    return { accessToken: result.accessToken, user: result.user }
   }
 
+  @ApiOperation({ summary: 'Yangi access token olish (refresh token orqali)' })
+  @ApiResponse({ status: 200, description: 'Yangi access token qaytarildi' })
+  @ApiResponse({ status: 401, description: 'Refresh token yaroqsiz' })
+  @Post('refresh')
+  async refresh(@Req() req: Request) {
+    const refreshToken = req.cookies?.refreshToken
+    return await this.refreshTokenUseCase.execute(refreshToken)
+  }
+
+  @ApiOperation({ summary: 'Tizimdan chiqish' })
+  @ApiResponse({ status: 200, description: 'Muvaffaqiyatli chiqildi' })
   @Post('logout')
   async logout(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
-    const refreshToken = req.cookies?.refreshToken;
-
-    await this.logoutUseCase.execute(refreshToken);
-
+    const refreshToken = req.cookies?.refreshToken
+    await this.logoutUseCase.execute(refreshToken)
     res.clearCookie('refreshToken', {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
-    });
+    })
   }
 
+  @ApiOperation({ summary: 'Parolni unutdim — tasdiqlash kodi yuboriladi' })
+  @ApiResponse({ status: 200, description: 'Agar email mavjud bo\'lsa, kod yuborildi' })
   @Post('forgot-password')
   async forgotPassword(@Body() dto: ForgotPasswordDto) {
-    return this.forgotPasswordUseCase.execute(dto.email);
-  };
+    return await this.forgotPasswordUseCase.execute(dto.email)
+  }
 
-  @Post('verify-reset-password-otp')
-  async verifyResetPasswordOtp(dto: VerifyResetPasswordOtpDto) {
-    return this.verifyResetPasswordOtpUseCase.execute(dto);
-  };
-
+  @ApiOperation({ summary: 'Kod orqali yangi parol o\'rnatish' })
+  @ApiResponse({ status: 200, description: 'Parol muvaffaqiyatli yangilandi' })
+  @ApiResponse({ status: 400, description: 'Kod noto\'g\'ri' })
   @Post('reset-password')
-  async resetPassword(dto: ResetPasswordDto) {
-    return this.resetPasswordUseCase.execute(dto); 
-  };
-  
+  async resetPassword(@Body() dto: ResetPasswordDto) {
+    return await this.resetPasswordUseCase.execute(dto)
+  }
+
+  @ApiExcludeEndpoint()
   @Get('google')
   @UseGuards(AuthGuard('google'))
   async googleAuth() {}
 
+  @ApiExcludeEndpoint()
   @Get('google/callback')
   @UseGuards(AuthGuard('google'))
   async googleCallback(@Req() req, @Res({ passthrough: true }) res: Response) {
-    const result = await this.oAuthLoginUseCase.execute(req.user);
-
-    if (result.requiresRoleSelection) {
-      return result;
-    }
+    const result = await this.oAuthLoginUseCase.execute(req.user)
+    if (result.requiresRoleSelection) return result
 
     this.setRefreshTokenCookie(res, result.refreshToken!)
-    return { accessToken: result.accessToken, user: result.user };
+    return { accessToken: result.accessToken, user: result.user }
   }
 
-  @Post('complete-oauth')
-  async completeOAuthGoogle(
-    @Body() dto: CompleteOAuthDto,
-    @Res({ passthrough: true }) res: Response,
-  ) {
-    const result = await this.completeOAuthUseCase.execute(dto);
-    this.setRefreshTokenCookie(res, result.refreshToken);
-    return { accessToken: result.accessToken };
-  }
-
+  @ApiExcludeEndpoint()
   @Get('github')
   @UseGuards(AuthGuard('github'))
   async githubAuth() {}
 
+  @ApiExcludeEndpoint()
   @Get('github/callback')
   @UseGuards(AuthGuard('github'))
   async githubCallback(@Req() req, @Res({ passthrough: true }) res: Response) {
-    const result = await this.oAuthLoginUseCase.execute(req.user);
-
-    if (result.requiresRoleSelection) {
-      return result;
-    }
+    const result = await this.oAuthLoginUseCase.execute(req.user)
+    if (result.requiresRoleSelection) return result
 
     this.setRefreshTokenCookie(res, result.refreshToken!)
+    return { accessToken: result.accessToken, user: result.user }
+  }
 
-    return {
-      accessToken: result.accessToken,
-      user: result.user,
-    };
-  };
-
+  @ApiOperation({ summary: 'OAuth orqali yangi user uchun rolni tanlab ro\'yxatni yakunlash' })
+  @ApiResponse({ status: 201, description: 'Ro\'yxat yakunlandi, token qaytarildi' })
+  @Post('complete-oauth')
+  async completeOAuth(
+    @Body() dto: CompleteOAuthDto,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const result = await this.completeOAuthUseCase.execute(dto)
+    this.setRefreshTokenCookie(res, result.refreshToken)
+    return { accessToken: result.accessToken }
+  }
 }

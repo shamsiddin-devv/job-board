@@ -9,14 +9,22 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common'
-import { AcceptApplicationUseCase } from 'src/application/use-cases/application/AcceptApplicationUseCase'
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+} from '@nestjs/swagger'
+import { JwtAuthGuard } from '../../guards/jwt-auth.guard'
 import { ApplyToJobUseCase } from 'src/application/use-cases/application/ApplyToJobUseCase'
+import { AcceptApplicationUseCase } from 'src/application/use-cases/application/AcceptApplicationUseCase'
+import { RejectApplicationUseCase } from 'src/application/use-cases/application/RejectApplicationUseCase'
 import { GetApplicantsUseCase } from 'src/application/use-cases/application/GetApplicantsUseCase'
 import { GetMyApplicationsUseCase } from 'src/application/use-cases/application/GetMyApplicationsUseCase'
-import { RejectApplicationUseCase } from 'src/application/use-cases/application/RejectApplicationUseCase'
-import { JwtAuthGuard } from 'src/presentation/guards/jwt-auth.guard'
 import { ApplyToJobDto } from './dto/application.dto'
 
+@ApiTags('Applications')
+@ApiBearerAuth()
 @Controller()
 export class ApplicationController {
   constructor(
@@ -27,6 +35,9 @@ export class ApplicationController {
     private readonly getMyApplicationsUseCase: GetMyApplicationsUseCase,
   ) {}
 
+  @ApiOperation({ summary: 'Vakansiyaga ariza topshirish' })
+  @ApiResponse({ status: 201, description: 'Ariza muvaffaqiyatli topshirildi' })
+  @ApiResponse({ status: 409, description: 'Ariza allaqachon topshirilgan' })
   @Post('jobs/:jobId/apply')
   @UseGuards(JwtAuthGuard)
   async apply(
@@ -37,18 +48,26 @@ export class ApplicationController {
     return await this.applyToJobUseCase.execute(jobId, req.user.sub, dto)
   }
 
+  @ApiOperation({ summary: 'Arizani qabul qilish (faqat vakansiya egasi)' })
+  @ApiResponse({ status: 200, description: 'Ariza qabul qilindi' })
+  @ApiResponse({ status: 401, description: 'Ruxsat yo\'q' })
   @Patch('applications/:id/accept')
   @UseGuards(JwtAuthGuard)
   async accept(@Param('id') id: string, @Req() req) {
     return await this.acceptApplicationUseCase.execute(id, req.user.sub)
   }
 
+  @ApiOperation({ summary: 'Arizani rad etish (faqat vakansiya egasi)' })
+  @ApiResponse({ status: 200, description: 'Ariza rad etildi' })
+  @ApiResponse({ status: 401, description: 'Ruxsat yo\'q' })
   @Patch('applications/:id/reject')
   @UseGuards(JwtAuthGuard)
   async reject(@Param('id') id: string, @Req() req) {
     return await this.rejectApplicationUseCase.execute(id, req.user.sub)
   }
 
+  @ApiOperation({ summary: 'Vakansiyaga kelgan barcha arizalarni ko\'rish' })
+  @ApiResponse({ status: 200, description: 'Arizalar ro\'yxati' })
   @Get('jobs/:jobId/applicants')
   @UseGuards(JwtAuthGuard)
   async getApplicants(
@@ -65,6 +84,8 @@ export class ApplicationController {
     )
   }
 
+  @ApiOperation({ summary: 'O\'zim topshirgan barcha arizalarni ko\'rish' })
+  @ApiResponse({ status: 200, description: 'Arizalar ro\'yxati' })
   @Get('applications/my')
   @UseGuards(JwtAuthGuard)
   async getMyApplications(
