@@ -1,13 +1,15 @@
+import { Injectable } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import {v2 as cloudinary} from "cloudinary";
 import { IStorageService, IUploadResult } from "src/domain/services/IStorageService";
 
+@Injectable()
 export class CloudinaryService implements IStorageService {
   constructor(private readonly configService: ConfigService) {
     cloudinary.config({
-      cloud_name: this.configService.get('CLOUDINARY_CLOUD_NAME'),
-      api_key: this.configService.get('CLOUDINARY_API_KEY'),
-      api_secret: this.configService.get('CLOUDINARY_SECRET')
+      cloud_name: this.configService.getOrThrow<string>('CLOUDINARY_CLOUD_NAME'),
+      api_key: this.configService.getOrThrow<string>('CLOUDINARY_API_KEY'),
+      api_secret: this.configService.getOrThrow<string>('CLOUDINARY_API_SECRET')
     });
   }
 
