@@ -4,11 +4,13 @@ import { NotFoundError } from "src/domain/errors/NotFoundError"
 import { UnauthorizedError } from "src/domain/errors/UnauthorizedError"
 import { IApplicationRepository } from "src/domain/repositories/IApplicationRepository"
 import { IJobRepository } from "src/domain/repositories/IJobRespository"
+import { CreateNotificationUseCase } from "../notification/CreateNotificationUseCase"
 
 export class RejectApplicationUseCase {
   constructor(
     private readonly applicationRepo: IApplicationRepository,
     private readonly jobRepo: IJobRepository,
+    private readonly createNotification: CreateNotificationUseCase
   ) {}
  
   async execute(applicationId: string, requesterId: string) {
@@ -21,7 +23,13 @@ export class RejectApplicationUseCase {
       throw new ForbiddenError(APPLICATION_MESSAGES.NOT_PERMISSION);
  
     application.reject()
- 
-    return await this.applicationRepo.update(applicationId, application)
+    const result = await this.applicationRepo.update(applicationId, application)
+        await this.createNotification.execute(
+      application.applicantId,
+      'application_rejected',
+      'Arizangiz qabul qilinmadi !'
+    )
+
+    return result
   }
 }

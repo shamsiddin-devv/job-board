@@ -6,6 +6,7 @@ import { ITokenService } from 'src/domain/services/ITokenService';
 import { NotFoundError } from 'src/domain/errors/NotFoundError';
 import { AUTH_MESSAGES } from 'src/domain/constants/message';
 import { UnauthorizedError } from 'src/domain/errors/UnauthorizedError';
+import { VerifyOtpUseCase } from './VerifyOtpUseCase';
 
 export class ResetPasswordUseCase {
   constructor(

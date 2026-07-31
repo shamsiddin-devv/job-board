@@ -1,3 +1,4 @@
+import { AUTH_MESSAGES } from 'src/domain/constants/message';
 import { OtpCode } from 'src/domain/entities/OtpCode';
 import { IOtpRepository } from 'src/domain/repositories/IOtpRepository';
 import { INodeMailerService } from 'src/domain/services/IEmailService';
@@ -22,6 +23,8 @@ export class SendOtpUseCase {
       text: `Sizning kodingiz: ${code}`,
       html: this.buildHtml(code)
     });
+
+    return {message: AUTH_MESSAGES.OTP_SENT};
   };
 
   private buildHtml(code: string): string {

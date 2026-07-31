@@ -76,7 +76,9 @@ export const USER_MESSAGES = {
   ALREADY_ACTIVE: 'User is already active.',
 
   USER_INACTIVE: 'Your account is inactive.',
-  USER_NOT_FOUND: 'User not found.'
+  USER_NOT_FOUND: 'User not found.',
+
+  FILE_VALIDATION_MESSAGE: 'Only PDF, JPG, and PNG are accepted.'
 } as const;
 
 export const JOB_MESSAGES = {

@@ -1,7 +1,9 @@
 import { InjectRedis } from "@nestjs-modules/ioredis";
+import { Injectable } from "@nestjs/common";
 import Redis from "ioredis";
 import { ICacheRedisService } from "src/domain/services/ICacheRedisService";
 
+@Injectable()
 export class CacheRedisService implements ICacheRedisService {
   constructor(@InjectRedis() private readonly redis: Redis) {}
 
