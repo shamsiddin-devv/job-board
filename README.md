@@ -1,135 +1,124 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# JobBoard
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+A two-sided job marketplace where companies post job vacancies and workers can also publish "hire me" profiles. Built with Clean Architecture (Domain-Driven Design) principles — fully testable, framework-agnostic business logic, and easy to extend.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## What makes this different from a typical job board
 
-## Description
+- **Two-sided** — not only companies post jobs; workers can publish their own profiles to be discovered by companies
+- **Clean Architecture** — Domain, Application, Infrastructure, and Presentation layers are fully separated, keeping business logic independent of frameworks and databases
+- **Full Auth system** — Email/password, OTP-based email verification, Google and GitHub OAuth, Access + Refresh token rotation
+- **Production-ready** — Docker, Redis caching, Swagger documentation, centralized error handling
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## Tech Stack
 
-## Project setup
+| Layer | Technology |
+|---|---|
+| Framework | NestJS |
+| Language | TypeScript |
+| Database | PostgreSQL + Prisma ORM |
+| Cache / OTP storage | Redis |
+| Auth | JWT (Access + Refresh), Passport (Google, GitHub OAuth) |
+| File storage | Cloudinary |
+| Email | Nodemailer |
+| Documentation | Swagger (OpenAPI) |
+| Containerization | Docker, Docker Compose |
 
-```bash
-$ npm install
+## Architecture
+
+The project follows Clean Architecture, split into 4 layers:
+
+```
+src/
+├── domain/          # Business rules — zero dependency on external libraries
+│   ├── entities/      # Job, User, Company, Application, Resume...
+│   ├── value-objects/ # Email, SalaryRange
+│   ├── repositories/  # Interfaces (contracts)
+│   ├── services/       # Interfaces (Hash, Token, Email, Storage, Cache)
+│   └── errors/           # DomainError and its subtypes
+│
+├── application/      # Use Cases — where business logic actually runs
+│   └── use-cases/
+│       ├── auth/
+│       ├── job/
+│       ├── application/
+│       ├── company/
+│       ├── notification/
+│       ├── resume/
+│       └── saved-job/
+│
+├── infrastructure/   # Real technologies — Prisma, Redis, Cloudinary, JWT
+│   ├── db/
+│   ├── redis/
+│   ├── auth/
+│   ├── email/
+│   └── storage/
+│
+└── presentation/      # HTTP layer — Controllers, Guards, DTOs, Modules
+    ├── modules/
+    ├── guards/
+    ├── decorators/
+    └── filters/
 ```
 
-## Compile and run the project
+**Core principle:** `domain/` never knows about `infrastructure/` or any framework. Every repository and service is consumed through an interface, so swapping Prisma for another ORM, or Nodemailer for another email provider, only requires a new implementation — the business logic never changes.
+
+## Key Features
+
+- **Auth** — Register/Login, OTP-based email verification, Google/GitHub OAuth, password reset, Access+Refresh token rotation
+- **Jobs** — Post vacancies/CVs, edit, close, search with filters and sorting, view count tracking
+- **Applications** — Apply to jobs, accept/reject applicants, list applicants per job
+- **Companies** — Create company profile, admin verification
+- **Resumes** — Worker CV profile, PDF upload (Cloudinary)
+- **Saved Jobs** — Bookmark vacancies
+- **Notifications** — Automatic notifications when application status changes
+
+## Getting Started
+
+### 1. Local (without Docker)
 
 ```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+git clone <repo-url>
+cd jobboard
+npm install
+cp .env.example .env    # fill in the values
+npx prisma migrate dev
+npm run start:dev
 ```
 
-## Run tests
+### 2. With Docker (recommended)
 
 ```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+cp .env.docker.example .env.docker    # fill in the values
+docker-compose up --build
 ```
 
-## Deployment
+This spins up the backend, PostgreSQL, and Redis together.
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+## API Documentation
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+Once the server is running, full interactive API docs are available at:
 
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+```
+http://localhost:4000/api/docs
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+## Environment Variables
 
-## Resources
+See `.env.example` for the full list of required variables:
 
-Check out a few resources that may come in handy when working with NestJS:
+```
+DATABASE_URL, REDIS_URL
+JWT_ACCESS_SECRET, JWT_REFRESH_SECRET
+SMTP_EMAIL, SMTP_PASS
+CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET
+GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_CALLBACK_URL
+GITHUB_CLIENT_ID, GITHUB_CLIENT_SECRET, GITHUB_CALLBACK_URL
+```
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+## Project Status
 
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+Backend is complete: Domain, Application, Infrastructure, and Presentation layers, all modules (Auth, Job, Application, Company, Notification, Resume, SavedJob), Swagger documentation, and Docker configuration.
 
 ## License
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
-
-
-src/
-├── domain/
-├── application/
-├── infrastructure/
-│
-└── presentation/
-    ├── guards/
-    │   ├── jwt-auth.guard.ts
-    │   └── roles.guard.ts
-    │
-    ├── filters/
-    │   └── domain-exception.filter.ts
-    │
-    └── modules/
-        ├── auth/
-        │   ├── auth.controller.ts
-        │   ├── auth.module.ts
-        │   └── dto/
-        │       ├── register.dto.ts
-        │       └── login.dto.ts
-        │
-        ├── job/
-        │   ├── job.controller.ts
-        │   ├── job.module.ts
-        │   └── dto/
-        │
-        ├── application/
-        │   ├── application.controller.ts
-        │   ├── application.module.ts
-        │   └── dto/
-        │
-        ├── company/
-        ├── notification/
-        ├── resume/
-        └── saved-job/
+MIT
