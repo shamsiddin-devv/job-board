@@ -1,5 +1,5 @@
 import { Global, Module } from "@nestjs/common";
-import { PrismaModule } from "./db/prisma.module";
+import { PrismaModule } from "./db/prisma/prisma.module";
 import { PrismaUserRepository } from "./db/repositories/PrismaUserRepository";
 import { PrismaApplicationRepository } from "./db/repositories/PrismaApplicationRepository";
 import { PrismaCompanyRepository } from "./db/repositories/PrismaCompanyRepository";

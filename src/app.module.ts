@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { PrismaModule } from './infrastructure/db/prisma.module';
+import { PrismaModule } from './infrastructure/db/prisma/prisma.module';
 import { RedisModule } from './infrastructure/redis/redis.module';
 import { AuthModule } from './presentation/modules/auth/auth.module';
 import { ApplicationModule } from './presentation/modules/application/application.module';

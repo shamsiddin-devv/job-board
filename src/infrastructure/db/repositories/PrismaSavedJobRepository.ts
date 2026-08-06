@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ISavedJobRepository, SavedJobListResult } from 'src/domain/repositories/ISavedJobRepository';
-import { PrismaService } from '../prisma.service';
+import { PrismaService } from '../prisma/prisma.service';
 import { SavedJob } from 'src/domain/entities/SavedJob';
 
 @Injectable()

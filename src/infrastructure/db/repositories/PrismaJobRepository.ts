@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import { Prisma } from '@prisma/client'
-import { PrismaService } from '../prisma.service'
+import { PrismaService } from '../prisma/prisma.service'
 import { Job } from '../../../domain/entities/Job'
 import { IJobRepository, JobFilters, JobListResult } from 'src/domain/repositories/IJobRespository'
 import { SalaryRange } from 'src/domain/value-objects/Salary'
