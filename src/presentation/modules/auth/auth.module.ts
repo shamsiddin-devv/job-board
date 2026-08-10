@@ -42,10 +42,10 @@ import { ICacheRedisService } from 'src/domain/services/ICacheRedisService'
       provide: RegisterUseCase,
       useFactory: (
         userRepo: IUserRepository,
-        redisService: ICacheRedisService,
+        hashService: IHashService,
         sendOtp: SendOtpUseCase,
-      ) => new RegisterUseCase(userRepo, redisService, sendOtp),
-      inject: ['IUserRepository', 'ICacheRedisService', SendOtpUseCase],
+      ) => new RegisterUseCase(userRepo, hashService, sendOtp),
+      inject: ['IUserRepository', 'IHashService', SendOtpUseCase],
     },
 
     {
@@ -82,17 +82,14 @@ import { ICacheRedisService } from 'src/domain/services/ICacheRedisService'
       useFactory: (
         userRepo: IUserRepository,
         verifyOtp: VerifyOtpUseCase,
-        redisService: ICacheRedisService
       ) =>
         new ConfirmRegistrationUseCase(
           userRepo,
           verifyOtp,
-          redisService
         ),
       inject: [
         'IUserRepository',
         VerifyOtpUseCase,
-        'ICacheRedisService'
       ],
     },
 

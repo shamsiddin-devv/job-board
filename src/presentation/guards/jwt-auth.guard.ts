@@ -16,8 +16,10 @@ export class JwtAuthGuard implements CanActivate {
 
     if(!authHeader || !authHeader.startsWith('Bearer ')) throw new UnauthorizedError(AUTH_MESSAGES.TOKEN_NOT_FOUND);
 
+    const token = authHeader.slice('Bearer '.length).trim();
+
     try {
-      const payload = this.tokenService.verifyAccessToken(authHeader);
+      const payload = this.tokenService.verifyAccessToken(token);
       request.user = payload;
       return true;
     }catch(err) {

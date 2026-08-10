@@ -3,35 +3,32 @@ import { VerifyOtpUseCase } from './VerifyOtpUseCase';
 import { Email } from 'src/domain/value-objects/Email';
 import { AUTH_MESSAGES } from 'src/domain/constants/message';
 import { VerifyOtpUseCaseDto } from 'src/application/dto/auth/VerifyOtpUseCaseDto';
-import { ICacheRedisService } from 'src/domain/services/ICacheRedisService';
-import { User } from 'src/domain/entities/User';
+import { NotFoundError } from 'src/domain/errors/NotFoundError';
 
 export class ConfirmRegistrationUseCase {
   constructor(
     private readonly userRepo: IUserRepository,
     private readonly verifyOtp: VerifyOtpUseCase,
-    private readonly redisService: ICacheRedisService
   ) {}
 
   async execute(dto: VerifyOtpUseCaseDto) {
     const verifyEmail = new Email(dto.emailStr);
 
-    const cacheUser = await this.redisService.get(verifyEmail.toString());
-    console.log(cacheUser)
-    // const user = new User(cacheUser);
+    const user = await this.userRepo.findByEmail(verifyEmail.toString());
+    if(!user) throw new NotFoundError(AUTH_MESSAGES.USER_NOT_FOUND);
 
-    // await this.verifyOtp.execute(dto);
-    // user.markAsVerified();
-    // await this.userRepo.update(user.id!, user);
+    await this.verifyOtp.execute(dto);
+    user.markAsVerified();
+    await this.userRepo.update(user.id!, user);
 
-    // return {
-    //   message: AUTH_MESSAGES.REGISTER_SUCCESS,
-    //   user: {
-    //     id: user.id,
-    //     email: user.email.toString(),
-    //     fullName: user.fullName,
-    //     role: user.role,
-    //   },
-    // };
+    return {
+      message: AUTH_MESSAGES.REGISTER_SUCCESS,
+      user: {
+        id: user.id,
+        email: user.email.toString(),
+        fullName: user.fullName,
+        role: user.role,
+      },
+    };
   };
 };

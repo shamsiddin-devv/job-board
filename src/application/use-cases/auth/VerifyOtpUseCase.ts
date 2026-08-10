@@ -14,7 +14,6 @@ export class VerifyOtpUseCase {
 
     const savedCode = await this.otpRepo.find(email.toString());
     if(!savedCode) throw new BadRequestError(AUTH_MESSAGES.OTP_NOT_FOUND_OR_EXPIRED);
-    console.log(savedCode);
 
     if(savedCode !== dto.inputCode) throw new BadRequestError(AUTH_MESSAGES.OTP_INVALID);
 
