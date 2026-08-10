@@ -62,6 +62,21 @@ export class SearchJobsQueryDto {
   search?: string;
 
   @ApiPropertyOptional({
+    description: 'Filter postings by owner user id.',
+  })
+  @IsOptional()
+  @IsString()
+  userId?: string;
+
+  @ApiPropertyOptional({
+    enum: ['active', 'closed', 'draft'],
+    description: 'Filter by status.',
+  })
+  @IsOptional()
+  @IsEnum(['active', 'closed', 'draft'])
+  status?: 'active' | 'closed' | 'draft';
+
+  @ApiPropertyOptional({
     enum: ['newest', 'salary_high', 'salary_low', 'most_viewed'],
     example: 'newest',
     description: 'Sorting option.',

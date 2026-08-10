@@ -17,6 +17,6 @@ export class GetApplicantsUseCase {
     if (job.userId !== requesterId)
       throw new ForbiddenError(APPLICATION_MESSAGES.CANNOT_VIEW_APPLICATION);
  
-    return await this.applicationRepo.findAll({ jobId, page, limit })
+    return await this.applicationRepo.findEnrichedByJobId(jobId, page, limit)
   }
 }

@@ -11,6 +11,7 @@ export interface JobFilters {
   salaryMax?: number
   search?: string
   status?: JobStatus
+  userId?: string
   sortBy?: SortBy
   page?: number
   limit?: number

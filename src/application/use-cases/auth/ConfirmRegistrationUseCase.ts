@@ -1,57 +1,37 @@
 import { IUserRepository } from 'src/domain/repositories/IUserRepository';
 import { VerifyOtpUseCase } from './VerifyOtpUseCase';
-import { ITokenService } from 'src/domain/services/ITokenService';
-import { IRefreshTokenRepository } from 'src/domain/repositories/IRefreshTokenRepository';
 import { Email } from 'src/domain/value-objects/Email';
-import { NotFoundError } from 'src/domain/errors/NotFoundError';
 import { AUTH_MESSAGES } from 'src/domain/constants/message';
-import { RefreshToken } from 'src/domain/entities/RefreshToken';
 import { VerifyOtpUseCaseDto } from 'src/application/dto/auth/VerifyOtpUseCaseDto';
+import { ICacheRedisService } from 'src/domain/services/ICacheRedisService';
+import { User } from 'src/domain/entities/User';
 
 export class ConfirmRegistrationUseCase {
   constructor(
     private readonly userRepo: IUserRepository,
     private readonly verifyOtp: VerifyOtpUseCase,
-    private readonly tokenService: ITokenService,
-    private readonly refreshTokenRepo: IRefreshTokenRepository,
+    private readonly redisService: ICacheRedisService
   ) {}
 
   async execute(dto: VerifyOtpUseCaseDto) {
     const verifyEmail = new Email(dto.emailStr);
 
-    const user = await this.userRepo.findByEmail(verifyEmail.toString());
-    if (!user) throw new NotFoundError(AUTH_MESSAGES.USER_NOT_FOUND);
+    const cacheUser = await this.redisService.get(verifyEmail.toString());
+    console.log(cacheUser)
+    // const user = new User(cacheUser);
 
-    await this.verifyOtp.execute(dto);
-    user.markAsVerified();
-    await this.userRepo.update(user.id!, user);
+    // await this.verifyOtp.execute(dto);
+    // user.markAsVerified();
+    // await this.userRepo.update(user.id!, user);
 
-    const payload = {
-      sub: user.id!,
-      email: user.email.toString(),
-      role: user.role,
-    };
-    const accessToken = this.tokenService.signAccessToken(payload);
-    const refreshToken = this.tokenService.signRefreshToken(payload);
-
-    const refreshRow = new RefreshToken({
-      userId: user.id!,
-      token: refreshToken,
-      expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
-    });
-    
-    await this.refreshTokenRepo.create(refreshRow);
-
-    return {
-      message: AUTH_MESSAGES.REGISTER_SUCCESS,
-      accessToken,
-      refreshToken,
-      user: {
-        id: user.id,
-        email: user.email.toString(),
-        fullName: user.fullName,
-        role: user.role,
-      },
-    };
+    // return {
+    //   message: AUTH_MESSAGES.REGISTER_SUCCESS,
+    //   user: {
+    //     id: user.id,
+    //     email: user.email.toString(),
+    //     fullName: user.fullName,
+    //     role: user.role,
+    //   },
+    // };
   };
 };

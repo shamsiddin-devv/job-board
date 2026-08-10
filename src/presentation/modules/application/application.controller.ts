@@ -21,6 +21,7 @@ import { AcceptApplicationUseCase } from 'src/application/use-cases/application/
 import { RejectApplicationUseCase } from 'src/application/use-cases/application/RejectApplicationUseCase'
 import { GetApplicantsUseCase } from 'src/application/use-cases/application/GetApplicantsUseCase'
 import { GetMyApplicationsUseCase } from 'src/application/use-cases/application/GetMyApplicationsUseCase'
+import { GetCompanyApplicantsUseCase } from 'src/application/use-cases/application/GetCompanyApplicantsUseCase'
 import { ApplyToJobDto } from './dto/application.dto'
 
 @ApiTags('Applications')
@@ -33,6 +34,7 @@ export class ApplicationController {
     private readonly rejectApplicationUseCase: RejectApplicationUseCase,
     private readonly getApplicantsUseCase: GetApplicantsUseCase,
     private readonly getMyApplicationsUseCase: GetMyApplicationsUseCase,
+    private readonly getCompanyApplicantsUseCase: GetCompanyApplicantsUseCase,
   ) {}
 
   @ApiOperation({ summary: 'Vakansiyaga ariza topshirish' })
@@ -94,6 +96,22 @@ export class ApplicationController {
     @Query('limit') limit?: number,
   ) {
     return await this.getMyApplicationsUseCase.execute(
+      req.user.sub,
+      page,
+      limit,
+    )
+  }
+
+  @ApiOperation({ summary: 'Kompaniyaning barcha vakansiyalariga kelgan arizalar' })
+  @ApiResponse({ status: 200, description: 'Arizalar ro\'yxati' })
+  @Get('applications/company')
+  @UseGuards(JwtAuthGuard)
+  async getCompanyApplicants(
+    @Req() req,
+    @Query('page') page?: number,
+    @Query('limit') limit?: number,
+  ) {
+    return await this.getCompanyApplicantsUseCase.execute(
       req.user.sub,
       page,
       limit,

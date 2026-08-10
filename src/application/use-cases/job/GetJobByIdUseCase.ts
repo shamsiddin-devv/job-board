@@ -22,6 +22,15 @@ export class GetByIdUseCase {
       postType: job.postType,
       jobType: job.jobType,
       workFormat: job.workFormat,
+      city: job.city,
+      salaryRange: job.salaryRange
+        ? {
+            min: job.salaryRange.min,
+            max: job.salaryRange.max,
+            currency: job.salaryRange.currency,
+          }
+        : undefined,
+      status: job.status,
       viewsCount: job.viewsCount,
       createdAt: job.createdAt,
     };

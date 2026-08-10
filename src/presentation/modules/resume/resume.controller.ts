@@ -23,8 +23,11 @@ import { CloseResumeUseCase } from 'src/application/use-cases/resume/CloseResume
 import { CreateResumeUseCase } from 'src/application/use-cases/resume/CreateResumeUseCase'
 import { SearchResumesUseCase } from 'src/application/use-cases/resume/SearchResumesUseCase'
 import { UploadResumeFileUseCase } from 'src/application/use-cases/resume/UploadResumeFileUseCase'
+import { GetMyResumeUseCase } from 'src/application/use-cases/resume/GetMyResumeUseCase'
+import { UpdateResumeUseCase } from 'src/application/use-cases/resume/UpdateResumeUseCase'
 import { SearchResumesQueryDto } from './dto/search-resume.dto'
 import { CreateResumeDto } from './dto/create-resume.dto'
+import { UpdateResumeDto } from './dto/update-resume.dto'
 import { JwtAuthGuard } from 'src/presentation/guards/jwt-auth.guard'
 import { multerConfig } from 'src/infrastructure/upload/multer.config'
 
@@ -36,6 +39,8 @@ export class ResumeController {
     private readonly uploadResumeFileUseCase: UploadResumeFileUseCase,
     private readonly closeResumeUseCase: CloseResumeUseCase,
     private readonly searchResumesUseCase: SearchResumesUseCase,
+    private readonly getMyResumeUseCase: GetMyResumeUseCase,
+    private readonly updateResumeUseCase: UpdateResumeUseCase,
   ) {}
 
   @ApiOperation({ summary: 'Workerlarni (CV larni) qidirish — public' })
@@ -43,6 +48,24 @@ export class ResumeController {
   @Get()
   async search(@Query() query: SearchResumesQueryDto) {
     return await this.searchResumesUseCase.execute(query)
+  }
+
+  @ApiOperation({ summary: 'O\'z CV profilim' })
+  @ApiResponse({ status: 200, description: 'CV yoki null' })
+  @ApiBearerAuth()
+  @Get('me')
+  @UseGuards(JwtAuthGuard)
+  async getMyResume(@Req() req) {
+    return await this.getMyResumeUseCase.execute(req.user.sub)
+  }
+
+  @ApiOperation({ summary: 'CV profilini tahrirlash' })
+  @ApiResponse({ status: 200, description: 'CV yangilandi' })
+  @ApiBearerAuth()
+  @Patch()
+  @UseGuards(JwtAuthGuard)
+  async updateResume(@Body() dto: UpdateResumeDto, @Req() req) {
+    return await this.updateResumeUseCase.execute(req.user.sub, dto)
   }
 
   @ApiOperation({ summary: 'Yangi CV profili yaratish' })

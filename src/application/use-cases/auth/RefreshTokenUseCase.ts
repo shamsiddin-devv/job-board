@@ -12,8 +12,15 @@ export class RefreshTokenUseCase {
     private readonly tokenService: ITokenService,
   ) {}
 
-  async execute(refreshToken: string) {
-    const oldPayload = this.tokenService.verifyRefreshToken(refreshToken);
+  async execute(refreshToken?: string) {
+    if (!refreshToken) throw new UnauthorizedError(AUTH_MESSAGES.REFRESH_TOKEN_NOT_FOUND);
+
+    let oldPayload;
+    try {
+      oldPayload = this.tokenService.verifyRefreshToken(refreshToken);
+    } catch {
+      throw new UnauthorizedError(AUTH_MESSAGES.REFRESH_TOKEN_INVALID);
+    }
     if(!oldPayload) throw new UnauthorizedError(AUTH_MESSAGES.REFRESH_TOKEN_INVALID);
 
     const existToken = await this.refreshTokenRepo.findByToken(refreshToken);

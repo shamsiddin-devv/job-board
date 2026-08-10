@@ -8,6 +8,8 @@ import { CreateResumeUseCase } from 'src/application/use-cases/resume/CreateResu
 import { UploadResumeFileUseCase } from 'src/application/use-cases/resume/UploadResumeFileUseCase'
 import { CloseResumeUseCase } from 'src/application/use-cases/resume/CloseResumeUseCase'
 import { SearchResumesUseCase } from 'src/application/use-cases/resume/SearchResumesUseCase'
+import { GetMyResumeUseCase } from 'src/application/use-cases/resume/GetMyResumeUseCase'
+import { UpdateResumeUseCase } from 'src/application/use-cases/resume/UpdateResumeUseCase'
 
 @Module({
   imports: [RepositoriesModule],
@@ -37,6 +39,18 @@ import { SearchResumesUseCase } from 'src/application/use-cases/resume/SearchRes
       provide: SearchResumesUseCase,
       useFactory: (resumeRepo: IResumeRepository) =>
         new SearchResumesUseCase(resumeRepo),
+      inject: ['IResumeRepository'],
+    },
+    {
+      provide: GetMyResumeUseCase,
+      useFactory: (resumeRepo: IResumeRepository) =>
+        new GetMyResumeUseCase(resumeRepo),
+      inject: ['IResumeRepository'],
+    },
+    {
+      provide: UpdateResumeUseCase,
+      useFactory: (resumeRepo: IResumeRepository) =>
+        new UpdateResumeUseCase(resumeRepo),
       inject: ['IResumeRepository'],
     },
   ],

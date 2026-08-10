@@ -22,9 +22,16 @@ export class PrismaJobRepository implements IJobRepository {
 
     const where: Prisma.JobWhereInput = {}
 
-    where.status = filters.status
-      ? filters.status.toUpperCase() as any
-      : 'ACTIVE'
+    if (filters.userId) {
+      where.userId = filters.userId
+      if (filters.status) {
+        where.status = filters.status.toUpperCase() as any
+      }
+    } else {
+      where.status = filters.status
+        ? (filters.status.toUpperCase() as any)
+        : 'ACTIVE'
+    }
 
     if (filters.city) {
       where.city = { equals: filters.city, mode: 'insensitive' }

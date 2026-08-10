@@ -32,6 +32,23 @@ export class Resume {
     this._status = props.status ?? 'active'
   };
 
+  update(
+    props: Partial<{
+      title: string;
+      summary: string;
+      city: string;
+      salaryRange: SalaryRange;
+    }>,
+  ): void {
+    if (props.title !== undefined) {
+      if (!props.title.trim()) throw new BadRequestError(RESUME_MESSAGES.TITLE_REQUIRED);
+      this.props.title = props.title;
+    }
+    if (props.summary !== undefined) this.props.summary = props.summary;
+    if (props.city !== undefined) this.props.city = props.city;
+    if (props.salaryRange !== undefined) this.props.salaryRange = props.salaryRange;
+  };
+
   close(): void {
     if(this._status === 'closed') {
       throw new ConflictError(RESUME_MESSAGES.RESUME_ALREADY_CLOSED);

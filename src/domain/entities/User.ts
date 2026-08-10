@@ -50,7 +50,7 @@ export class User {
     if(!this._isActive) {
       throw new ConflictError(USER_MESSAGES.ALREADY_INACTIVE)
     };
-    this._isVerified = false
+    this._isActive = false
   };
 
   isOAuthUser(): boolean {

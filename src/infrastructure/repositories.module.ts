@@ -15,7 +15,6 @@ import { BcryptHash } from "./auth/BcryptHash";
 import { CloudinaryService } from "./storage/cloudinary.service";
 import { JsonWebToken } from "./auth/Jwt";
 
-
 @Global()
 @Module({
   imports: [PrismaModule],

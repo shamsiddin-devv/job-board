@@ -14,6 +14,8 @@ import { OAuthLoginUseCase } from 'src/application/use-cases/auth/OAuthLoginUsec
 import { CompleteOAuthRegistrationUseCase } from 'src/application/use-cases/auth/CompleteOAuthRegistrationUseCase'
 import { ForgotPasswordUseCase } from 'src/application/use-cases/auth/ForgotPasswordUseCase'
 import { ResetPasswordUseCase } from 'src/application/use-cases/auth/ResetPasswordUseCase'
+import { VerifyResetPasswordOtpUseCase } from 'src/application/use-cases/auth/VerifyResetPasswordOtpUseCase'
+import { GetMeUseCase } from 'src/application/use-cases/auth/GetMeUseCase'
 
 import { GoogleStrategy } from 'src/infrastructure/auth/oauth/google.strategy'
 import { GithubStrategy } from 'src/infrastructure/auth/oauth/github.strategy'
@@ -24,6 +26,7 @@ import type { IOtpRepository } from 'src/domain/repositories/IOtpRepository'
 import type { IHashService } from 'src/domain/services/IHashService'
 import type { ITokenService } from 'src/domain/services/ITokenService'
 import { INodeMailerService } from 'src/domain/services/IEmailService'
+import { ICacheRedisService } from 'src/domain/services/ICacheRedisService'
 
 @Module({
   imports: [
@@ -39,10 +42,10 @@ import { INodeMailerService } from 'src/domain/services/IEmailService'
       provide: RegisterUseCase,
       useFactory: (
         userRepo: IUserRepository,
-        hashService: IHashService,
+        redisService: ICacheRedisService,
         sendOtp: SendOtpUseCase,
-      ) => new RegisterUseCase(userRepo, hashService, sendOtp),
-      inject: ['IUserRepository', 'IHashService', SendOtpUseCase],
+      ) => new RegisterUseCase(userRepo, redisService, sendOtp),
+      inject: ['IUserRepository', 'ICacheRedisService', SendOtpUseCase],
     },
 
     {
@@ -79,20 +82,17 @@ import { INodeMailerService } from 'src/domain/services/IEmailService'
       useFactory: (
         userRepo: IUserRepository,
         verifyOtp: VerifyOtpUseCase,
-        tokenService: ITokenService,
-        refreshTokenRepo: IRefreshTokenRepository,
+        redisService: ICacheRedisService
       ) =>
         new ConfirmRegistrationUseCase(
           userRepo,
           verifyOtp,
-          tokenService,
-          refreshTokenRepo,
+          redisService
         ),
       inject: [
         'IUserRepository',
         VerifyOtpUseCase,
-        'ITokenService',
-        'IRefreshTokenRepository',
+        'ICacheRedisService'
       ],
     },
 
@@ -153,7 +153,23 @@ import { INodeMailerService } from 'src/domain/services/IEmailService'
         refreshTokenRepo: IRefreshTokenRepository,
         tokenService: ITokenService
       ) => new ResetPasswordUseCase(userRepo, hashService, refreshTokenRepo, tokenService),
-      inject: ['IUserRepository', VerifyOtpUseCase, 'IHashService'],
+      inject: ['IUserRepository', 'IHashService', 'IRefreshTokenRepository', 'ITokenService'],
+    },
+
+    {
+      provide: VerifyResetPasswordOtpUseCase,
+      useFactory: (
+        userRepo: IUserRepository,
+        verifyOtp: VerifyOtpUseCase,
+        tokenService: ITokenService,
+      ) => new VerifyResetPasswordOtpUseCase(userRepo, verifyOtp, tokenService),
+      inject: ['IUserRepository', VerifyOtpUseCase, 'ITokenService'],
+    },
+
+    {
+      provide: GetMeUseCase,
+      useFactory: (userRepo: IUserRepository) => new GetMeUseCase(userRepo),
+      inject: ['IUserRepository'],
     },
   ],
 })

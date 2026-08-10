@@ -10,7 +10,7 @@ export class RedisOtpRepository implements IOtpRepository {
   ) {}
 
   async create(email: string, code: string): Promise<void> {
-    await this.redisService.set(`otp:${email}`, code, 120);
+    await this.redisService.set(`otp:${email}`, code, 300);
   }
 
   async find(email: string): Promise<string | null> {

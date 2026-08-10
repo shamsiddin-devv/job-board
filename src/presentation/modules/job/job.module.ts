@@ -9,6 +9,8 @@ import type { ICompanyRepository } from 'src/domain/repositories/ICompanyReposit
 import { IJobRepository } from 'src/domain/repositories/IJobRespository'
 import { SearchJobsUseCase } from 'src/application/use-cases/job/SearchJobUseCase'
 import { GetByIdUseCase } from 'src/application/use-cases/job/GetJobByIdUseCase'
+import { GetMyJobsUseCase } from 'src/application/use-cases/job/GetMyJobsUseCase'
+import { DeleteJobUseCase } from 'src/application/use-cases/job/DeleteJobUseCase'
 
 @Module({
   imports: [RepositoriesModule],
@@ -41,6 +43,16 @@ import { GetByIdUseCase } from 'src/application/use-cases/job/GetJobByIdUseCase'
     {
       provide: GetByIdUseCase,
       useFactory: (jobRepo: IJobRepository) => new GetByIdUseCase(jobRepo),
+      inject: ['IJobRepository'],
+    },
+    {
+      provide: GetMyJobsUseCase,
+      useFactory: (jobRepo: IJobRepository) => new GetMyJobsUseCase(jobRepo),
+      inject: ['IJobRepository'],
+    },
+    {
+      provide: DeleteJobUseCase,
+      useFactory: (jobRepo: IJobRepository) => new DeleteJobUseCase(jobRepo),
       inject: ['IJobRepository'],
     },
   ],

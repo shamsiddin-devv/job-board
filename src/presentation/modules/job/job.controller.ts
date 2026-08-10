@@ -4,6 +4,7 @@ import {
   Get,
   Post,
   Patch,
+  Delete,
   Param,
   Query,
   Req,
@@ -20,6 +21,8 @@ import { GetByIdUseCase } from 'src/application/use-cases/job/GetJobByIdUseCase'
 import { PostJobUseCase } from 'src/application/use-cases/job/PostJobUseCase'
 import { SearchJobsUseCase } from 'src/application/use-cases/job/SearchJobUseCase'
 import { UpdateJobUseCase } from 'src/application/use-cases/job/UpdateJobUseCase'
+import { GetMyJobsUseCase } from 'src/application/use-cases/job/GetMyJobsUseCase'
+import { DeleteJobUseCase } from 'src/application/use-cases/job/DeleteJobUseCase'
 import { SearchJobsQueryDto } from './dto/search-job-query.dto'
 import { PostJobDto } from './dto/post-job.dto'
 import { JwtAuthGuard } from 'src/presentation/guards/jwt-auth.guard'
@@ -35,6 +38,8 @@ export class JobController {
     private readonly closeJobUseCase: CloseJobUseCase,
     private readonly searchJobsUseCase: SearchJobsUseCase,
     private readonly getByIdUseCase: GetByIdUseCase,
+    private readonly getMyJobsUseCase: GetMyJobsUseCase,
+    private readonly deleteJobUseCase: DeleteJobUseCase,
   ) {}
 
   @ApiOperation({ summary: 'Vakansiyalarni filter va sort bilan qidirish' })
@@ -42,6 +47,15 @@ export class JobController {
   @Get()
   async search(@Query() query: SearchJobsQueryDto) {
     return await this.searchJobsUseCase.execute(query)
+  }
+
+  @ApiOperation({ summary: 'O\'zimning postlarim (barcha statuslar)' })
+  @ApiResponse({ status: 200, description: 'Postlar ro\'yxati' })
+  @ApiBearerAuth()
+  @Get('mine')
+  @UseGuards(JwtAuthGuard)
+  async mine(@Query() query: SearchJobsQueryDto, @Req() req) {
+    return await this.getMyJobsUseCase.execute(req.user.sub, query)
   }
 
   @ApiOperation({ summary: 'Bitta vakansiyani ID orqali olish' })
@@ -86,5 +100,15 @@ export class JobController {
   @UseGuards(JwtAuthGuard)
   async close(@Param('id') id: string, @Req() req) {
     return await this.closeJobUseCase.execute(id, req.user.sub)
+  }
+
+  @ApiOperation({ summary: 'Vakansiyani o\'chirish' })
+  @ApiResponse({ status: 200, description: 'Vakansiya o\'chirildi' })
+  @ApiResponse({ status: 404, description: 'Vakansiya topilmadi' })
+  @ApiBearerAuth()
+  @Delete(':id')
+  @UseGuards(JwtAuthGuard)
+  async remove(@Param('id') id: string, @Req() req) {
+    return await this.deleteJobUseCase.execute(id, req.user.sub)
   }
 }

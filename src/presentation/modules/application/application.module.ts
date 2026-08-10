@@ -7,6 +7,7 @@ import { AcceptApplicationUseCase } from 'src/application/use-cases/application/
 import { RejectApplicationUseCase } from 'src/application/use-cases/application/RejectApplicationUseCase'
 import { GetApplicantsUseCase } from 'src/application/use-cases/application/GetApplicantsUseCase'
 import { GetMyApplicationsUseCase } from 'src/application/use-cases/application/GetMyApplicationsUseCase'
+import { GetCompanyApplicantsUseCase } from 'src/application/use-cases/application/GetCompanyApplicantsUseCase'
 import type { IApplicationRepository } from 'src/domain/repositories/IApplicationRepository'
 import type { IUserRepository } from 'src/domain/repositories/IUserRepository'
 import { IJobRepository } from 'src/domain/repositories/IJobRespository'
@@ -65,6 +66,12 @@ import { CreateNotificationUseCase } from 'src/application/use-cases/notificatio
       provide: GetMyApplicationsUseCase,
       useFactory: (applicationRepo: IApplicationRepository) =>
         new GetMyApplicationsUseCase(applicationRepo),
+      inject: ['IApplicationRepository'],
+    },
+    {
+      provide: GetCompanyApplicantsUseCase,
+      useFactory: (applicationRepo: IApplicationRepository) =>
+        new GetCompanyApplicantsUseCase(applicationRepo),
       inject: ['IApplicationRepository'],
     },
   ],

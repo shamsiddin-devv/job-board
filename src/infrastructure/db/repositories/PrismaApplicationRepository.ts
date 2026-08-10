@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import { PrismaService } from '../prisma/prisma.service'
-import { ApplicationFilters, ApplicationListResult, IApplicationRepository } from 'src/domain/repositories/IApplicationRepository'
+import { ApplicationFilters, ApplicationListResult, EnrichedApplicationListResult, IApplicationRepository } from 'src/domain/repositories/IApplicationRepository'
 import { Application } from 'src/domain/entities/Application'
 import { Prisma } from '@prisma/client'
 
@@ -62,6 +62,79 @@ export class PrismaApplicationRepository implements IApplicationRepository {
       limit,
       totalPages: Math.ceil(total / limit),
     }
+  }
+
+  private async enrichedQuery(
+    where: Prisma.ApplicationWhereInput,
+    page = 1,
+    limit = 20,
+  ): Promise<EnrichedApplicationListResult> {
+    const [rows, total] = await Promise.all([
+      this.prisma.application.findMany({
+        where,
+        orderBy: { appliedAt: 'desc' },
+        skip: (page - 1) * limit,
+        take: limit,
+        include: {
+          job: { select: { id: true, title: true, postType: true } },
+          applicant: {
+            select: { id: true, fullName: true, email: true, avatarUrl: true },
+          },
+        },
+      }),
+      this.prisma.application.count({ where }),
+    ])
+
+    return {
+      data: rows.map((row: any) => ({
+        id: row.id,
+        jobId: row.jobId,
+        applicantId: row.applicantId,
+        coverLetter: row.coverLetter ?? undefined,
+        resumeUrl: row.resumeUrl ?? undefined,
+        status: row.status.toLowerCase(),
+        appliedAt: row.appliedAt,
+        job: row.job
+          ? { id: row.job.id, title: row.job.title, postType: row.job.postType.toLowerCase() }
+          : null,
+        applicant: row.applicant
+          ? {
+              id: row.applicant.id,
+              fullName: row.applicant.fullName,
+              email: row.applicant.email,
+              avatarUrl: row.applicant.avatarUrl ?? undefined,
+            }
+          : null,
+      })),
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    }
+  }
+
+  async findEnrichedByJobId(
+    jobId: string,
+    page = 1,
+    limit = 20,
+  ): Promise<EnrichedApplicationListResult> {
+    return this.enrichedQuery({ jobId }, page, limit)
+  }
+
+  async findEnrichedByApplicant(
+    applicantId: string,
+    page = 1,
+    limit = 20,
+  ): Promise<EnrichedApplicationListResult> {
+    return this.enrichedQuery({ applicantId }, page, limit)
+  }
+
+  async findEnrichedByOwner(
+    ownerUserId: string,
+    page = 1,
+    limit = 20,
+  ): Promise<EnrichedApplicationListResult> {
+    return this.enrichedQuery({ job: { userId: ownerUserId } }, page, limit)
   }
 
   async create(application: Application): Promise<Application> {

@@ -1,17 +1,16 @@
 import { RegisterDto } from 'src/application/dto/auth/RegisterDto';
-import { User } from 'src/domain/entities/User';
 import { ConflictError } from 'src/domain/errors/ConflictError';
 import { IUserRepository } from 'src/domain/repositories/IUserRepository';
-import { IHashService } from 'src/domain/services/IHashService';
 import { Email } from 'src/domain/value-objects/Email';
 import { SendOtpUseCase } from './SendOtpUseCase';
 import { AUTH_MESSAGES } from 'src/domain/constants/message';
+import { ICacheRedisService } from 'src/domain/services/ICacheRedisService';
 
 export class RegisterUseCase {
   constructor(
     private readonly userRepo: IUserRepository,
-    private readonly hashService: IHashService,
-    private readonly sendOtpUseCase: SendOtpUseCase
+    private readonly redisService: ICacheRedisService,
+    private readonly sendOtpUseCase: SendOtpUseCase,
   ) {}
 
   async execute(dto: RegisterDto) {
@@ -20,15 +19,7 @@ export class RegisterUseCase {
     const exist = await this.userRepo.findByEmail(email.toString());
     if(exist) throw new ConflictError(AUTH_MESSAGES.EMAIL_ALREADY_EXISTS);
 
-    const passwordHash = await this.hashService.hash(dto.password);
-
-    const user = new User({
-      email,
-      fullName: dto.fullName,
-      role: dto.role
-    });
-
-    await this.userRepo.create(user, passwordHash);
+    await this.redisService.set(`${email.toString()}`, dto, 300);
     await this.sendOtpUseCase.execute(dto.email);
 
     return {success: true, message: AUTH_MESSAGES.OTP_SENT}

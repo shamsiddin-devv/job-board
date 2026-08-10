@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { ISavedJobRepository, SavedJobListResult } from 'src/domain/repositories/ISavedJobRepository';
+import { EnrichedSavedJobListResult, ISavedJobRepository, SavedJobListResult } from 'src/domain/repositories/ISavedJobRepository';
 import { PrismaService } from '../prisma/prisma.service';
 import { SavedJob } from 'src/domain/entities/SavedJob';
 
@@ -32,6 +32,59 @@ export class PrismaSavedJobRepository implements ISavedJobRepository {
 
     return {
       data: rows.map((row) => this.toDomain(row)),
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    };
+  }
+
+  async findEnrichedByUserId(
+    userId: string,
+    page = 1,
+    limit = 20,
+  ): Promise<EnrichedSavedJobListResult> {
+    const [rows, total] = await Promise.all([
+      this.prismaService.savedJob.findMany({
+        where: { userId },
+        orderBy: { savedAt: 'desc' },
+        skip: (page - 1) * limit,
+        take: limit,
+        include: { job: true },
+      }),
+      this.prismaService.savedJob.count({ where: { userId } }),
+    ]);
+
+    return {
+      data: rows.map((row: any) => ({
+        id: row.id,
+        userId: row.userId,
+        jobId: row.jobId,
+        savedAt: row.savedAt,
+        job: row.job
+          ? {
+              id: row.job.id,
+              userId: row.job.userId,
+              title: row.job.title,
+              description: row.job.description ?? undefined,
+              postType: row.job.postType.toLowerCase(),
+              jobType: row.job.jobType.toLowerCase(),
+              workFormat: row.job.workFormat.toLowerCase(),
+              city: row.job.city ?? undefined,
+              salaryRange:
+                row.job.salaryMin || row.job.salaryMax
+                  ? {
+                      min: row.job.salaryMin ?? undefined,
+                      max: row.job.salaryMax ?? undefined,
+                      currency: row.job.currency,
+                    }
+                  : undefined,
+              status: row.job.status.toLowerCase(),
+              viewsCount: row.job.viewsCount,
+              createdAt: row.job.createdAt,
+            }
+          : null,
+      })),
       total,
       page,
       limit,

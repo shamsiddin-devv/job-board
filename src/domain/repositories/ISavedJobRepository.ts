@@ -8,9 +8,18 @@ export interface SavedJobListResult {
   totalPages: number
 }
  
+export interface EnrichedSavedJobListResult {
+  data: any[]
+  total: number
+  page: number
+  limit: number
+  totalPages: number
+}
+
 export interface ISavedJobRepository {
   findByUserAndJob(userId: string, jobId: string): Promise<SavedJob | null>
   findByUserId(userId: string, page?: number, limit?: number): Promise<SavedJobListResult>
+  findEnrichedByUserId(userId: string, page?: number, limit?: number): Promise<EnrichedSavedJobListResult>
   create(savedJob: SavedJob): Promise<SavedJob>
   delete(userId: string, jobId: string): Promise<void>
 }

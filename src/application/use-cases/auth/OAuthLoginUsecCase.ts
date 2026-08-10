@@ -55,7 +55,7 @@ export class OAuthLoginUseCase {
       user: {
         id: exist.id,
         email: exist.email.toString(),
-        fullname: exist.fullName,
+        fullName: exist.fullName,
         avatarUrl: exist.avatarUrl,
         role: exist.role
       }

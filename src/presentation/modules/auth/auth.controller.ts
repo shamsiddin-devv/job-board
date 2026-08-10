@@ -12,6 +12,7 @@ import {
   ApiOperation,
   ApiResponse,
   ApiExcludeEndpoint,
+  ApiBearerAuth,
 } from '@nestjs/swagger'
 import { AuthGuard } from '@nestjs/passport'
 import type { Request, Response } from 'express'
@@ -26,13 +27,17 @@ import { CompleteOAuthRegistrationUseCase } from 'src/application/use-cases/auth
 import { RefreshTokenUseCase } from 'src/application/use-cases/auth/RefreshTokenUseCase'
 import { ForgotPasswordUseCase } from 'src/application/use-cases/auth/ForgotPasswordUseCase'
 import { ResetPasswordUseCase } from 'src/application/use-cases/auth/ResetPasswordUseCase'
+import { VerifyResetPasswordOtpUseCase } from 'src/application/use-cases/auth/VerifyResetPasswordOtpUseCase'
+import { GetMeUseCase } from 'src/application/use-cases/auth/GetMeUseCase'
 
 import { RegisterDto } from './dto/register.dto'
 import { LoginDto } from './dto/login.dto'
 import { SendOtpDto, VerifyOtpDto } from './dto/otp.dto'
 import { ForgotPasswordDto } from './dto/forgot-password.dto'
 import { ResetPasswordDto } from './dto/reset-password.dto'
+import { VerifyResetPasswordOtpDto } from './dto/verify-reset-password-otp.dto'
 import { CompleteOAuthDto } from './dto/complete-oauth.dto'
+import { JwtAuthGuard } from 'src/presentation/guards/jwt-auth.guard'
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -48,6 +53,8 @@ export class AuthController {
     private readonly refreshTokenUseCase: RefreshTokenUseCase,
     private readonly forgotPasswordUseCase: ForgotPasswordUseCase,
     private readonly resetPasswordUseCase: ResetPasswordUseCase,
+    private readonly verifyResetPasswordOtpUseCase: VerifyResetPasswordOtpUseCase,
+    private readonly getMeUseCase: GetMeUseCase,
   ) {}
 
   private setRefreshTokenCookie(res: Response, token: string) {
@@ -55,6 +62,7 @@ export class AuthController {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
+      path: '/',
       maxAge: 30 * 24 * 60 * 60 * 1000,
     })
   }
@@ -83,8 +91,8 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response,
   ) {
     const result = await this.confirmRegistration.execute(dto)
-    this.setRefreshTokenCookie(res, result.refreshToken)
-    return { accessToken: result.accessToken, user: result.user }
+    // this.setRefreshTokenCookie(res, )
+    // return {  user: result.user }
   }
 
   @ApiOperation({ summary: 'Email va parol orqali kirish' })
@@ -104,9 +112,23 @@ export class AuthController {
   @ApiResponse({ status: 200, description: 'Yangi access token qaytarildi' })
   @ApiResponse({ status: 401, description: 'Refresh token yaroqsiz' })
   @Post('refresh')
-  async refresh(@Req() req: Request) {
+  async refresh(
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ) {
     const refreshToken = req.cookies?.refreshToken
-    return await this.refreshTokenUseCase.execute(refreshToken)
+    const result = await this.refreshTokenUseCase.execute(refreshToken)
+    this.setRefreshTokenCookie(res, result.newRefreshToken)
+    return { accessToken: result.newAccessToken }
+  }
+
+  @ApiOperation({ summary: 'Joriy foydalanuvchi ma\'lumotlari' })
+  @ApiResponse({ status: 200, description: 'Foydalanuvchi qaytarildi' })
+  @ApiBearerAuth()
+  @Get('me')
+  @UseGuards(JwtAuthGuard)
+  async me(@Req() req: any) {
+    return await this.getMeUseCase.execute(req.user.sub)
   }
 
   @ApiOperation({ summary: 'Tizimdan chiqish' })
@@ -129,6 +151,14 @@ export class AuthController {
     return await this.forgotPasswordUseCase.execute(dto.email)
   }
 
+  @ApiOperation({ summary: 'Parolni tiklash kodini tasdiqlab, reset token olish' })
+  @ApiResponse({ status: 200, description: 'Reset token qaytarildi' })
+  @ApiResponse({ status: 400, description: 'Kod noto\'g\'ri yoki muddati tugagan' })
+  @Post('verify-reset-otp')
+  async verifyResetOtp(@Body() dto: VerifyResetPasswordOtpDto) {
+    return await this.verifyResetPasswordOtpUseCase.execute(dto)
+  }
+
   @ApiOperation({ summary: 'Kod orqali yangi parol o\'rnatish' })
   @ApiResponse({ status: 200, description: 'Parol muvaffaqiyatli yangilandi' })
   @ApiResponse({ status: 400, description: 'Kod noto\'g\'ri' })
@@ -145,12 +175,9 @@ export class AuthController {
   @ApiExcludeEndpoint()
   @Get('google/callback')
   @UseGuards(AuthGuard('google'))
-  async googleCallback(@Req() req, @Res({ passthrough: true }) res: Response) {
+  async googleCallback(@Req() req, @Res() res: Response) {
     const result = await this.oAuthLoginUseCase.execute(req.user)
-    if (result.requiresRoleSelection) return result
-
-    this.setRefreshTokenCookie(res, result.refreshToken!)
-    return { accessToken: result.accessToken, user: result.user }
+    return this.handleOAuthRedirect(res, result, 'google')
   }
 
   @ApiExcludeEndpoint()
@@ -161,12 +188,29 @@ export class AuthController {
   @ApiExcludeEndpoint()
   @Get('github/callback')
   @UseGuards(AuthGuard('github'))
-  async githubCallback(@Req() req, @Res({ passthrough: true }) res: Response) {
+  async githubCallback(@Req() req, @Res() res: Response) {
     const result = await this.oAuthLoginUseCase.execute(req.user)
-    if (result.requiresRoleSelection) return result
+    return this.handleOAuthRedirect(res, result, 'github')
+  }
 
+  private handleOAuthRedirect(
+    res: Response,
+    result: any,
+    provider: 'google' | 'github',
+  ) {
+    const base = (process.env.FRONTEND_URL ?? 'http://localhost:5173').split(',')[0]
+    if (result.requiresRoleSelection) {
+      const p = result.profile
+      const params = new URLSearchParams({
+        email: p.email ?? '',
+        name: p.name ?? '',
+        avatarUrl: p.avatarUrl ?? '',
+        provider,
+      })
+      return res.redirect(`${base}/oauth/complete?${params.toString()}`)
+    }
     this.setRefreshTokenCookie(res, result.refreshToken!)
-    return { accessToken: result.accessToken, user: result.user }
+    return res.redirect(`${base}/oauth/callback`)
   }
 
   @ApiOperation({ summary: 'OAuth orqali yangi user uchun rolni tanlab ro\'yxatni yakunlash' })

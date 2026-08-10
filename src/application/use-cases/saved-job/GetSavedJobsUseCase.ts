@@ -4,6 +4,6 @@ export class GetSavedJobsUseCase {
   constructor(private readonly savedJobRepo: ISavedJobRepository) {}
  
   async execute(userId: string, page?: number, limit?: number) {
-    return await this.savedJobRepo.findByUserId(userId, page, limit)
+    return await this.savedJobRepo.findEnrichedByUserId(userId, page, limit)
   }
 }
