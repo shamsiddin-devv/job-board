@@ -41,7 +41,7 @@ export class Resume {
     }>,
   ): void {
     if (props.title !== undefined) {
-      if (!props.title.trim()) throw new BadRequestError(RESUME_MESSAGES.TITLE_REQUIRED);
+      if (!props.title?.trim()) throw new BadRequestError(RESUME_MESSAGES.TITLE_REQUIRED);
       this.props.title = props.title;
     }
     if (props.summary !== undefined) this.props.summary = props.summary;
@@ -74,7 +74,7 @@ export class Resume {
   };
 
   attachFile(url: string): void {
-    if(!url && url.trim() === '') {
+    if (!url?.trim()) {
       throw new BadRequestError(RESUME_MESSAGES.FILE_URL_REQUIRED);
     };
     this.props.fileUrl = url;

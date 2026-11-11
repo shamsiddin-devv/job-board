@@ -24,7 +24,7 @@ export class CreateResumeUseCase {
     if (existing) throw new ConflictError(RESUME_MESSAGES.RESUME_ALREADY_EXIST);
 
     const salaryRange =
-      dto.salaryMin || dto.salaryMax
+      dto.salaryMin != null || dto.salaryMax != null
         ? new SalaryRange({
             min: dto.salaryMin,
             max: dto.salaryMax,

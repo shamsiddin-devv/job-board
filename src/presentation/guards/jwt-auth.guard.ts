@@ -1,5 +1,5 @@
 import { CanActivate, ExecutionContext, Inject, Injectable } from '@nestjs/common';
-import { Observable } from 'rxjs';
+import type { IUserRepository } from 'src/domain/repositories/IUserRepository';
 import { AUTH_MESSAGES } from 'src/domain/constants/message';
 import { UnauthorizedError } from 'src/domain/errors/UnauthorizedError';
 import type { ITokenService } from 'src/domain/services/ITokenService';
@@ -8,9 +8,10 @@ import type { ITokenService } from 'src/domain/services/ITokenService';
 export class JwtAuthGuard implements CanActivate {
   constructor(
     @Inject('ITokenService') private readonly tokenService: ITokenService,
+    @Inject('IUserRepository') private readonly users: IUserRepository,
   ) {}
 
-  canActivate(context: ExecutionContext): boolean | Promise<boolean> | Observable<boolean> {
+  async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
     const authHeader = request.headers.authorization;
 
@@ -18,12 +19,17 @@ export class JwtAuthGuard implements CanActivate {
 
     const token = authHeader.slice('Bearer '.length).trim();
 
+    let payload;
     try {
-      const payload = this.tokenService.verifyAccessToken(token);
-      request.user = payload;
-      return true;
-    }catch(err) {
+      payload = this.tokenService.verifyAccessToken(token);
+    } catch {
       throw new UnauthorizedError(AUTH_MESSAGES.TOKEN_INVALID_OR_EXPIRED);
-    };
+    }
+    const user = await this.users.findById(payload.sub);
+    if (!user?.isActive || !user.isVerified) {
+      throw new UnauthorizedError(AUTH_MESSAGES.ACCOUNT_INACTIVE);
+    }
+    request.user = { ...payload, role: user.role, email: user.email.toString() };
+    return true;
   };
 };

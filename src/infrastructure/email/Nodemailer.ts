@@ -1,30 +1,40 @@
-import { Injectable } from "@nestjs/common";
-import { ConfigService } from "@nestjs/config";
-import nodemailer from "nodemailer"
-import { INodeMailerService, SendEmailParams  } from "src/domain/services/IEmailService";
+import { Injectable, Logger, ServiceUnavailableException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import nodemailer, { type Transporter } from 'nodemailer';
+import type { INodeMailerService, SendEmailParams } from 'src/domain/services/IEmailService';
 
 @Injectable()
 export class NodemailerService implements INodeMailerService {
-  private transporter: nodemailer.transporter
+  private readonly transporter: Transporter;
 
-  constructor(private readonly configService: ConfigService) {
+  constructor(private readonly config: ConfigService) {
+    const host = config.get<string>('SMTP_HOST');
+    const port = config.getOrThrow<number>('SMTP_PORT');
+    const transport = host
+      ? { host, port, secure: port === 465, requireTLS: port !== 465 }
+      : { service: 'gmail' };
     this.transporter = nodemailer.createTransport({
-      service: 'gmail',
+      ...transport,
+      connectionTimeout: 5000,
+      greetingTimeout: 5000,
+      socketTimeout: 10000,
       auth: {
-        user: this.configService.get('SMTP_EMAIL'),
-        pass: this.configService.get('SMTP_PASS')
-      }
+        user: config.get<string>('SMTP_USER') ?? config.getOrThrow<string>('SMTP_EMAIL'),
+        pass: config.getOrThrow<string>('SMTP_PASS'),
+      },
     });
   }
 
-  async send(params: SendEmailParams ): Promise<void> {
+  async send(params: SendEmailParams): Promise<void> {
     try {
       await this.transporter.sendMail({
-        from: this.configService.get('SMTP_EMAIL'),
-        ...params
-      })
-    }catch(err) {
-      throw new Error('Error occurred while sending the code to email.')
+        from: this.config.getOrThrow<string>('SMTP_EMAIL'),
+        ...params,
+        signal: AbortSignal.timeout(10000),
+      });
+    } catch {
+      Logger.warn('SMTP send failed', NodemailerService.name);
+      throw new ServiceUnavailableException('Email delivery is temporarily unavailable.');
     }
   }
 }

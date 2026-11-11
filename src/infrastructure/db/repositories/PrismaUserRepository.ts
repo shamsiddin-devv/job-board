@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { IUserRepository } from 'src/domain/repositories/IUserRepository';
 import { PrismaService } from '../prisma/prisma.service';
-import { User } from 'src/domain/entities/User';
+import { User, type AuthProvider } from 'src/domain/entities/User';
 import { Email } from 'src/domain/value-objects/Email';
 
 @Injectable()
@@ -35,12 +35,19 @@ export class PrismaUserRepository implements IUserRepository {
     return userPassword.passwordHash;
   };
 
-  async updateHashPassword(userId: string, hashPassword: string): Promise<void> {
-    await this.findById(userId);
-    await this.prismaService.user.update({where: {id: userId}, data: hashPassword});
-  };
+  async resetPassword(userId: string, previousHash: string, newHash: string): Promise<boolean> {
+    return this.prismaService.$transaction(async (tx) => {
+      const { count } = await tx.user.updateMany({
+        where: { id: userId, passwordHash: previousHash, isActive: true },
+        data: { passwordHash: newHash },
+      });
+      if (count !== 1) return false;
+      await tx.refreshToken.updateMany({ where: { userId }, data: { isRevoked: true } });
+      return true;
+    });
+  }
 
-  async create(data: User, passwordHash: string): Promise<User> {
+  async create(data: User, passwordHash?: string): Promise<User> {
     const row = await this.prismaService.user.create({
       data: this.toPersistence(data, passwordHash),
     });
@@ -66,6 +73,7 @@ export class PrismaUserRepository implements IUserRepository {
       fullName: user.fullName,
       phone: user.phone ?? undefined,
       role: user.role.toLowerCase() as any,
+      authProvider: user.authProvider.toLowerCase() as AuthProvider,
       avatarUrl: user.avatarUrl ?? undefined,
       isVerified: user.isVerified,
       isActive: user.isActive,
@@ -80,6 +88,7 @@ export class PrismaUserRepository implements IUserRepository {
       fullName: user.fullName,
       phone: user.phone,
       role: user.role.toUpperCase(),
+      authProvider: user.authProvider.toUpperCase(),
       avatarUrl: user.avatarUrl,
       isVerified: user.isVerified,
       isActive: user.isActive,

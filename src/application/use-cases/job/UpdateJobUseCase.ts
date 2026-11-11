@@ -1,5 +1,6 @@
 import { UpdateJobDto } from 'src/application/dto/job/UpdateJobDto';
-import { AUTH_MESSAGES, JOB_MESSAGES } from 'src/domain/constants/message';
+import { SalaryRange } from 'src/domain/value-objects/Salary';
+import { JOB_MESSAGES } from 'src/domain/constants/message';
 import { ForbiddenError } from 'src/domain/errors/ForbiddenError';
 import { NotFoundError } from 'src/domain/errors/NotFoundError';
 import { IJobRepository } from 'src/domain/repositories/IJobRespository';
@@ -15,7 +16,15 @@ export class UpdateJobUseCase {
     
     if(job.userId !== userId) throw new ForbiddenError(JOB_MESSAGES.JOB_ACCESS_DENIED);
 
-    job.update(dto);
+    const hasSalaryUpdate = dto.salaryMin != null || dto.salaryMax != null || dto.currency != null;
+    const salaryRange = hasSalaryUpdate && (job.salaryRange || dto.salaryMin != null || dto.salaryMax != null)
+      ? new SalaryRange({
+          min: dto.salaryMin ?? job.salaryRange?.min,
+          max: dto.salaryMax ?? job.salaryRange?.max,
+          currency: dto.currency ?? job.salaryRange?.currency ?? 'UZS',
+        })
+      : undefined;
+    job.update({ ...dto, salaryRange });
     return this.jobRepo.update(jobId, job);
   };
 };

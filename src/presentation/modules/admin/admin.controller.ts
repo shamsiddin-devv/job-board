@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Controller,
   Get,
   Patch,
@@ -22,8 +23,11 @@ export class AdminController {
   constructor(private readonly prisma: PrismaService) {}
 
   private paginate(page?: number, limit?: number) {
-    const p = Number(page) > 0 ? Number(page) : 1
-    const l = Number(limit) > 0 ? Math.min(Number(limit), 100) : 20
+    const p = Number(page ?? 1)
+    const l = Number(limit ?? 20)
+    if (!Number.isInteger(p) || p < 1 || p > 10000 || !Number.isInteger(l) || l < 1 || l > 100) {
+      throw new BadRequestException('Invalid pagination.');
+    }
     return { p, l, skip: (p - 1) * l, take: l }
   }
 
@@ -57,6 +61,7 @@ export class AdminController {
   ) {
     const { p, l, skip, take } = this.paginate(page, limit)
     const where: any = {}
+    if (role && !['ADMIN', 'COMPANY', 'WORKER'].includes(role.toUpperCase())) throw new BadRequestException('Invalid role.');
     if (role) where.role = role.toUpperCase()
     if (status === 'active') where.isActive = true
     if (status === 'inactive') where.isActive = false
@@ -93,13 +98,17 @@ export class AdminController {
   @ApiOperation({ summary: 'Foydalanuvchini faollashtirish' })
   @Patch('users/:id/activate')
   async activate(@Param('id') id: string) {
-    return this.prisma.user.update({ where: { id }, data: { isActive: true } })
+    return this.prisma.user.update({ where: { id }, data: { isActive: true }, select: { id: true, isActive: true } })
   }
 
   @ApiOperation({ summary: 'Foydalanuvchini bloklash' })
   @Patch('users/:id/deactivate')
   async deactivate(@Param('id') id: string) {
-    return this.prisma.user.update({ where: { id }, data: { isActive: false } })
+    return this.prisma.$transaction(async (tx) => {
+      const user = await tx.user.update({ where: { id }, data: { isActive: false }, select: { id: true, isActive: true } });
+      await tx.refreshToken.updateMany({ where: { userId: id }, data: { isRevoked: true } });
+      return user;
+    });
   }
 
   @ApiOperation({ summary: 'Kompaniyalar (tasdiqlash navbati)' })

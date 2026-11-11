@@ -4,13 +4,12 @@ import { NotFoundError } from "src/domain/errors/NotFoundError"
 import { UnauthorizedError } from "src/domain/errors/UnauthorizedError"
 import { IApplicationRepository } from "src/domain/repositories/IApplicationRepository"
 import { IJobRepository } from "src/domain/repositories/IJobRespository"
-import { CreateNotificationUseCase } from "../notification/CreateNotificationUseCase"
+import { Notification } from 'src/domain/entities/Notification'
 
 export class AcceptApplicationUseCase {
   constructor(
     private readonly applicationRepo: IApplicationRepository,
     private readonly jobRepo: IJobRepository,
-    private readonly createNotification: CreateNotificationUseCase
   ) {}
  
   async execute(applicationId: string, requesterId: string) {
@@ -24,13 +23,10 @@ export class AcceptApplicationUseCase {
  
     application.accept()
     
-    const result = await this.applicationRepo.update(applicationId, application);
-    await this.createNotification.execute(
-      application.applicantId,
-      'application_accepted',
-      'Arizangiz qabul qilindi !'
-    );
-
-    return result;
+    return this.applicationRepo.decide(applicationId, application, new Notification({
+      userId: application.applicantId,
+      type: 'application_accepted',
+      message: 'Arizangiz qabul qilindi !',
+    }));
   }
 }

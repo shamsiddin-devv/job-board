@@ -1,3 +1,5 @@
+import { ConflictError } from 'src/domain/errors/ConflictError'
+import type { Notification } from 'src/domain/entities/Notification'
 import { Injectable } from '@nestjs/common'
 import { PrismaService } from '../prisma/prisma.service'
 import { ApplicationFilters, ApplicationListResult, EnrichedApplicationListResult, IApplicationRepository } from 'src/domain/repositories/IApplicationRepository'
@@ -144,12 +146,23 @@ export class PrismaApplicationRepository implements IApplicationRepository {
     return this.toDomain(row)
   }
 
-  async update(id: string, application: Application): Promise<Application> {
-    const row = await this.prisma.application.update({
-      where: { id },
-      data: this.toPersistence(application),
-    })
-    return this.toDomain(row)
+  async decide(id: string, application: Application, notification: Notification): Promise<Application> {
+    return this.prisma.$transaction(async (tx) => {
+      const status = application.status === 'accepted' ? 'ACCEPTED' : 'REJECTED';
+      const { count } = await tx.application.updateMany({
+        where: { id, status: { in: ['PENDING', 'REVIEWED'] } },
+        data: { status },
+      });
+      if (count !== 1) throw new ConflictError('Application was already processed.');
+      await tx.notification.create({
+        data: {
+          userId: notification.userId,
+          type: status === 'ACCEPTED' ? 'APPLICATION_ACCEPTED' : 'APPLICATION_REJECTED',
+          message: notification.message,
+        },
+      });
+      return this.toDomain(await tx.application.findUniqueOrThrow({ where: { id } }));
+    });
   }
 
   async delete(id: string): Promise<void> {

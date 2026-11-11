@@ -15,9 +15,9 @@ export class ForgotPasswordUseCase {
     const user = await this.userRepo.findByEmail(email.toString());
     if(!user) return {message: AUTH_MESSAGES.OTP_SENT};
 
-    if(user.authProvider !== 'local') return {message: AUTH_MESSAGES.OTP_SENT};
+    if (!user.isActive || !user.isVerified || user.isOAuthUser()) return {message: AUTH_MESSAGES.OTP_SENT};
 
-    await this.sendOtpUseCase.execute(email.toString());
+    await this.sendOtpUseCase.execute(email.toString(), 'reset_password');
     return {message: AUTH_MESSAGES.OTP_SENT};
   };
 }

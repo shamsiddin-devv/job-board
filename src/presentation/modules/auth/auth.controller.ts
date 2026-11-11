@@ -2,6 +2,8 @@ import {
   Body,
   Controller,
   Get,
+  HttpCode,
+  UnauthorizedException,
   Post,
   Req,
   Res,
@@ -37,6 +39,8 @@ import { ForgotPasswordDto } from './dto/forgot-password.dto'
 import { ResetPasswordDto } from './dto/reset-password.dto'
 import { VerifyResetPasswordOtpDto } from './dto/verify-reset-password-otp.dto'
 import { CompleteOAuthDto } from './dto/complete-oauth.dto'
+import type { OAuthLoginDto } from 'src/application/dto/auth/OAuthLoginDto';
+import { oauthCookieOptions } from 'src/infrastructure/auth/oauth/oauth-state';
 import { JwtAuthGuard } from 'src/presentation/guards/jwt-auth.guard'
 
 @ApiTags('Auth')
@@ -78,27 +82,25 @@ export class AuthController {
   @ApiOperation({ summary: 'Tasdiqlash kodini qayta yuborish' })
   @ApiResponse({ status: 200, description: 'Kod yuborildi' })
   @Post('send-otp')
+  @HttpCode(200)
   async sendOtp(@Body() dto: SendOtpDto) {
-    return await this.sendOtpUseCase.execute(dto.email)
+    return this.sendOtpUseCase.resendRegistration(dto.email)
   }
 
   @ApiOperation({ summary: 'OTP kodni tasdiqlab, ro\'yxatdan o\'tishni yakunlash' })
-  @ApiResponse({ status: 200, description: 'Tasdiqlandi, token qaytariladi' })
+  @ApiResponse({ status: 200, description: 'Tasdiqlandi, foydalanuvchi qaytariladi' })
   @ApiResponse({ status: 400, description: 'Kod noto\'g\'ri yoki muddati tugagan' })
   @Post('verify')
-  async verifyOtp(
-    @Body() dto: VerifyOtpDto,
-    @Res({ passthrough: true }) res: Response,
-  ) {
-    const result = await this.confirmRegistration.execute(dto)
-    // this.setRefreshTokenCookie(res, )
-    // return {  user: result.user }
+  @HttpCode(200)
+  async verifyOtp(@Body() dto: VerifyOtpDto) {
+    return this.confirmRegistration.execute(dto)
   }
 
   @ApiOperation({ summary: 'Email va parol orqali kirish' })
   @ApiResponse({ status: 200, description: 'Muvaffaqiyatli kirildi' })
   @ApiResponse({ status: 401, description: 'Email yoki parol noto\'g\'ri' })
   @Post('login')
+  @HttpCode(200)
   async login(
     @Body() dto: LoginDto,
     @Res({ passthrough: true }) res: Response,
@@ -112,6 +114,7 @@ export class AuthController {
   @ApiResponse({ status: 200, description: 'Yangi access token qaytarildi' })
   @ApiResponse({ status: 401, description: 'Refresh token yaroqsiz' })
   @Post('refresh')
+  @HttpCode(200)
   async refresh(
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
@@ -134,19 +137,23 @@ export class AuthController {
   @ApiOperation({ summary: 'Tizimdan chiqish' })
   @ApiResponse({ status: 200, description: 'Muvaffaqiyatli chiqildi' })
   @Post('logout')
+  @HttpCode(200)
   async logout(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
     const refreshToken = req.cookies?.refreshToken
-    await this.logoutUseCase.execute(refreshToken)
+    const result = await this.logoutUseCase.execute(refreshToken)
     res.clearCookie('refreshToken', {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
+      path: '/',
     })
+    return result;
   }
 
   @ApiOperation({ summary: 'Parolni unutdim — tasdiqlash kodi yuboriladi' })
   @ApiResponse({ status: 200, description: 'Agar email mavjud bo\'lsa, kod yuborildi' })
   @Post('forgot-password')
+  @HttpCode(200)
   async forgotPassword(@Body() dto: ForgotPasswordDto) {
     return await this.forgotPasswordUseCase.execute(dto.email)
   }
@@ -155,6 +162,7 @@ export class AuthController {
   @ApiResponse({ status: 200, description: 'Reset token qaytarildi' })
   @ApiResponse({ status: 400, description: 'Kod noto\'g\'ri yoki muddati tugagan' })
   @Post('verify-reset-otp')
+  @HttpCode(200)
   async verifyResetOtp(@Body() dto: VerifyResetPasswordOtpDto) {
     return await this.verifyResetPasswordOtpUseCase.execute(dto)
   }
@@ -163,6 +171,7 @@ export class AuthController {
   @ApiResponse({ status: 200, description: 'Parol muvaffaqiyatli yangilandi' })
   @ApiResponse({ status: 400, description: 'Kod noto\'g\'ri' })
   @Post('reset-password')
+  @HttpCode(200)
   async resetPassword(@Body() dto: ResetPasswordDto) {
     return await this.resetPasswordUseCase.execute(dto)
   }
@@ -198,12 +207,13 @@ export class AuthController {
     result: any,
     provider: 'google' | 'github',
   ) {
-    const base = (process.env.FRONTEND_URL ?? 'http://localhost:5173').split(',')[0]
+    const base = (process.env.FRONTEND_URL ?? 'http://localhost:5173').split(',')[0].trim().replace(/\/$/, '')
     if (result.requiresRoleSelection) {
       const p = result.profile
+      res.cookie('workuz_oauth_registration', { ...p, provider, expiresAt: Date.now() + 600000 }, oauthCookieOptions)
       const params = new URLSearchParams({
         email: p.email ?? '',
-        name: p.name ?? '',
+        name: p.fullName ?? '',
         avatarUrl: p.avatarUrl ?? '',
         provider,
       })
@@ -218,9 +228,21 @@ export class AuthController {
   @Post('complete-oauth')
   async completeOAuth(
     @Body() dto: CompleteOAuthDto,
+    @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const result = await this.completeOAuthUseCase.execute(dto)
+    const profile = req.signedCookies?.workuz_oauth_registration as (OAuthLoginDto & { expiresAt: number }) | undefined;
+    if (!profile?.email || !profile.provider || profile.expiresAt < Date.now()) {
+      throw new UnauthorizedException('OAuth registration expired. Restart sign in.');
+    }
+    const result = await this.completeOAuthUseCase.execute({
+      email: profile.email,
+      fullName: profile.fullName,
+      avatarUrl: profile.avatarUrl,
+      provider: profile.provider,
+      role: dto.role,
+    });
+    res.clearCookie('workuz_oauth_registration', { path: '/', httpOnly: true, secure: oauthCookieOptions.secure, sameSite: 'lax' });
     this.setRefreshTokenCookie(res, result.refreshToken)
     return { accessToken: result.accessToken }
   }

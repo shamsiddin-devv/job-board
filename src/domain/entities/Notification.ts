@@ -26,7 +26,6 @@ export class Notification {
   }
 
   markAsRead(): void {
-    if (this._isRead) throw new Error('Allaqachon o\'qilgan')
     this._isRead = true
   }
 

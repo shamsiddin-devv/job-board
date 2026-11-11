@@ -27,7 +27,7 @@ export class ApplyToJobUseCase {
       throw new ForbiddenError(APPLICATION_MESSAGES.ONLY_WORKER_CAN_SUBMIY_APPLICATION)
  
     const job = await this.jobRepo.findById(jobId)
-    if (!job) throw new NotFoundError(JOB_MESSAGES.JOB_NOT_FOUND)
+    if (!job || job.postType !== 'job') throw new NotFoundError(JOB_MESSAGES.JOB_NOT_FOUND)
  
     if (job.status !== 'active')
       throw new ConflictError(JOB_MESSAGES.JOB_ALREADY_CLOSED)

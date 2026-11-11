@@ -1,7 +1,6 @@
 import { Module } from '@nestjs/common'
 import { ApplicationController } from './application.controller'
 import { RepositoriesModule } from 'src/infrastructure/repositories.module'
-import { NotificationModule } from '../notification/notification.module'
 import { ApplyToJobUseCase } from 'src/application/use-cases/application/ApplyToJobUseCase'
 import { AcceptApplicationUseCase } from 'src/application/use-cases/application/AcceptApplicationUseCase'
 import { RejectApplicationUseCase } from 'src/application/use-cases/application/RejectApplicationUseCase'
@@ -11,10 +10,9 @@ import { GetCompanyApplicantsUseCase } from 'src/application/use-cases/applicati
 import type { IApplicationRepository } from 'src/domain/repositories/IApplicationRepository'
 import type { IUserRepository } from 'src/domain/repositories/IUserRepository'
 import { IJobRepository } from 'src/domain/repositories/IJobRespository'
-import { CreateNotificationUseCase } from 'src/application/use-cases/notification/CreateNotificationUseCase'
 
 @Module({
-  imports: [RepositoriesModule, NotificationModule],
+  imports: [RepositoriesModule],
   controllers: [ApplicationController],
   providers: [
     {
@@ -31,13 +29,11 @@ import { CreateNotificationUseCase } from 'src/application/use-cases/notificatio
       useFactory: (
         applicationRepo: IApplicationRepository,
         jobRepo: IJobRepository,
-        createNotification: CreateNotificationUseCase,
       ) =>
-        new AcceptApplicationUseCase(applicationRepo, jobRepo, createNotification),
+        new AcceptApplicationUseCase(applicationRepo, jobRepo),
       inject: [
         'IApplicationRepository',
         'IJobRepository',
-        CreateNotificationUseCase,
       ],
     },
     {
@@ -45,13 +41,11 @@ import { CreateNotificationUseCase } from 'src/application/use-cases/notificatio
       useFactory: (
         applicationRepo: IApplicationRepository,
         jobRepo: IJobRepository,
-        createNotification: CreateNotificationUseCase,
       ) =>
-        new RejectApplicationUseCase(applicationRepo, jobRepo, createNotification),
+        new RejectApplicationUseCase(applicationRepo, jobRepo),
       inject: [
         'IApplicationRepository',
         'IJobRepository',
-        CreateNotificationUseCase,
       ],
     },
     {

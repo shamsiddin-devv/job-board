@@ -1,3 +1,4 @@
+import { randomInt } from 'node:crypto';
 import { OTP_MESSAGES } from "../constants/message";
 import { BadRequestError } from "../errors/BadRequestError";
 import { ConflictError } from "../errors/ConflictError";
@@ -31,7 +32,7 @@ export class OtpCode {
   };
 
   static generateCode(): string {
-    return Math.floor(100000 + Math.random() * 900000).toString(); 
+    return randomInt(100000, 1000000).toString();
   };
 
   isExpired(): boolean {

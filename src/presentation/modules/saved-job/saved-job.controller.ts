@@ -17,6 +17,7 @@ import {
 import { GetSavedJobsUseCase } from 'src/application/use-cases/saved-job/GetSavedJobsUseCase'
 import { SaveJobUseCase } from 'src/application/use-cases/saved-job/SaveJobUseCase'
 import { UnsaveJobUseCase } from 'src/application/use-cases/saved-job/UnsaveJobUseCase'
+import { PaginationDto } from '../../dto/pagination.dto';
 import { JwtAuthGuard } from 'src/presentation/guards/jwt-auth.guard'
 
 
@@ -36,8 +37,7 @@ export class SavedJobController {
   @Get()
   async getAll(
     @Req() req,
-    @Query('page') page?: number,
-    @Query('limit') limit?: number,
+    @Query() { page, limit }: PaginationDto,
   ) {
     return await this.getSavedJobsUseCase.execute(req.user.sub, page, limit)
   }

@@ -11,6 +11,7 @@ export interface ITokenPayload {
 export interface IResetPasswordTokenPayload {
   sub: string,
   email: string,
+  credentialVersion: string,
   iat?: number;
   exp?: number;
 }

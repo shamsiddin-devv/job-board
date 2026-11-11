@@ -1,124 +1,48 @@
-# JobBoard
+# WorkUZ Job Board API
 
-A two-sided job marketplace where companies post job vacancies and workers can also publish "hire me" profiles. Built with Clean Architecture (Domain-Driven Design) principles — fully testable, framework-agnostic business logic, and easy to extend.
+WorkUZ is a NestJS REST API for worker and company accounts, vacancies, applications, resumes, saved jobs, notifications, and admin moderation. It uses PostgreSQL with Prisma, Redis for OTP, SMTP for mail, and Cloudinary for uploads.
 
-## What makes this different from a typical job board
+## Local setup
 
-- **Two-sided** — not only companies post jobs; workers can publish their own profiles to be discovered by companies
-- **Clean Architecture** — Domain, Application, Infrastructure, and Presentation layers are fully separated, keeping business logic independent of frameworks and databases
-- **Full Auth system** — Email/password, OTP-based email verification, Google and GitHub OAuth, Access + Refresh token rotation
-- **Production-ready** — Docker, Redis caching, Swagger documentation, centralized error handling
+Use Node.js 24, PostgreSQL, and Redis. Copy `.env.example` to `.env` and configure the services you intend to exercise. Generate three distinct random JWT signing secrets. The provider values in the example are placeholders.
 
-## Tech Stack
-
-| Layer | Technology |
-|---|---|
-| Framework | NestJS |
-| Language | TypeScript |
-| Database | PostgreSQL + Prisma ORM |
-| Cache / OTP storage | Redis |
-| Auth | JWT (Access + Refresh), Passport (Google, GitHub OAuth) |
-| File storage | Cloudinary |
-| Email | Nodemailer |
-| Documentation | Swagger (OpenAPI) |
-| Containerization | Docker, Docker Compose |
-
-## Architecture
-
-The project follows Clean Architecture, split into 4 layers:
-
-```
-src/
-├── domain/          # Business rules — zero dependency on external libraries
-│   ├── entities/      # Job, User, Company, Application, Resume...
-│   ├── value-objects/ # Email, SalaryRange
-│   ├── repositories/  # Interfaces (contracts)
-│   ├── services/       # Interfaces (Hash, Token, Email, Storage, Cache)
-│   └── errors/           # DomainError and its subtypes
-│
-├── application/      # Use Cases — where business logic actually runs
-│   └── use-cases/
-│       ├── auth/
-│       ├── job/
-│       ├── application/
-│       ├── company/
-│       ├── notification/
-│       ├── resume/
-│       └── saved-job/
-│
-├── infrastructure/   # Real technologies — Prisma, Redis, Cloudinary, JWT
-│   ├── db/
-│   ├── redis/
-│   ├── auth/
-│   ├── email/
-│   └── storage/
-│
-└── presentation/      # HTTP layer — Controllers, Guards, DTOs, Modules
-    ├── modules/
-    ├── guards/
-    ├── decorators/
-    └── filters/
-```
-
-**Core principle:** `domain/` never knows about `infrastructure/` or any framework. Every repository and service is consumed through an interface, so swapping Prisma for another ORM, or Nodemailer for another email provider, only requires a new implementation — the business logic never changes.
-
-## Key Features
-
-- **Auth** — Register/Login, OTP-based email verification, Google/GitHub OAuth, password reset, Access+Refresh token rotation
-- **Jobs** — Post vacancies/CVs, edit, close, search with filters and sorting, view count tracking
-- **Applications** — Apply to jobs, accept/reject applicants, list applicants per job
-- **Companies** — Create company profile, admin verification
-- **Resumes** — Worker CV profile, PDF upload (Cloudinary)
-- **Saved Jobs** — Bookmark vacancies
-- **Notifications** — Automatic notifications when application status changes
-
-## Getting Started
-
-### 1. Local (without Docker)
-
-```bash
-git clone <repo-url>
-cd jobboard
-npm install
-cp .env.example .env    # fill in the values
-npx prisma migrate dev
+```sh
+npm ci
+npm run db:generate
+npm run db:migrate
 npm run start:dev
 ```
 
-### 2. With Docker (recommended)
+For local Docker Compose, copy `.env.example` to `.env.docker`, replace the provider values and secrets, and run `docker compose up --build`. Compose starts its own database and Redis and applies migrations before starting the API. Its database credentials are for local use.
 
-```bash
-cp .env.docker.example .env.docker    # fill in the values
-docker-compose up --build
+The API prefix is `/api`. Swagger is available at `http://localhost:4000/api-docs` outside production. `GET /api/health/live` reports process health. `GET /api/health/ready` returns 503 when PostgreSQL or Redis cannot respond.
+
+## Verification
+
+```sh
+npm run typecheck
+npm run build
+npm test -- --runInBand
+npm run test:e2e
+npm audit --omit=dev
 ```
 
-This spins up the backend, PostgreSQL, and Redis together.
+The HTTP test expects an explicitly configured `DATABASE_URL` pointing to a freshly migrated test database named `workuz_ci` or `workuz_test_<id>`, plus `REDIS_URL` pointing to a test Redis. It uses a test mailer to retrieve the OTP. CI starts PostgreSQL and Redis service containers and builds the production image. Set `WORKUZ_TEST_REDIS=stub` only to exercise the HTTP and database paths when local Redis is unavailable. That mode skips Redis-specific assertions.
 
-## API Documentation
+## Oracle Cloud Always Free VPS
 
-Once the server is running, full interactive API docs are available at:
+For a single VM with HTTPS, PostgreSQL, and Redis, use the [Oracle VPS deployment guide](deploy/oracle-vps.md).
 
-```
-http://localhost:4000/api/docs
-```
+## Render Free without a VPS
 
-## Environment Variables
+For the card-free hosting option, use the [Render Free deployment guide](deploy/render-free.md).
 
-See `.env.example` for the full list of required variables:
+## Production rollout
 
-```
-DATABASE_URL, REDIS_URL
-JWT_ACCESS_SECRET, JWT_REFRESH_SECRET
-SMTP_EMAIL, SMTP_PASS
-CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET
-GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_CALLBACK_URL
-GITHUB_CLIENT_ID, GITHUB_CLIENT_SECRET, GITHUB_CALLBACK_URL
-```
+1. Provision PostgreSQL and Redis with restricted network access. Configure HTTPS, the API and frontend origins, OAuth callback URLs, Cloudinary, and SMTP. Use a secret store for credentials. Keep the API and browser frontend on the same site for the existing refresh-cookie flow. Send browser requests that use refresh or OAuth registration cookies with credentials enabled.
+2. Build and run the `migrate` Docker target once as a release job against the target database, then roll out the `runtime` target. Use the readiness endpoint to gate traffic. Without Docker, build with `npm run build` and start with `npm run start:prod`.
+3. Before applying migrations to a database provisioned before this release, take a backup and compare its schema against `0_init`. If it already matches that migration, mark `0_init` as applied with `npx prisma migrate resolve --applied 0_init` before running `npm run db:migrate`. Resolve any drift on a staging copy first. See the [Prisma baselining guide](https://www.prisma.io/docs/orm/prisma-migrate/workflows/baselining).
+4. In staging, verify email delivery and password reset, complete real Google and GitHub callbacks, and upload a test PDF and image. Check that expired or blocked sessions are rejected. Existing OAuth accounts with a null password and `LOCAL` provider need manual review because earlier versions did not persist the provider. Use verified account records to recover them.
+5. Before switching traffic, verify alerts on HTTP errors and dependency readiness, a PostgreSQL backup restore, and rate limits at the ingress for authentication and file uploads. Retain the previous application image for rollback and review migration compatibility before rolling back application code.
 
-## Project Status
-
-Backend is complete: Domain, Application, Infrastructure, and Presentation layers, all modules (Auth, Job, Application, Company, Notification, Resume, SavedJob), Swagger documentation, and Docker configuration.
-
-## License
-
-MIT
+`POST /api/auth/verify` returns the verified user. Call `POST /api/auth/login` afterward to establish a session. OAuth completion takes a role and requires the signed cookie set by the provider callback.

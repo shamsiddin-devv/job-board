@@ -16,6 +16,19 @@ export class PrismaJobRepository implements IJobRepository {
     return this.toDomain(row)
   }
 
+  async incrementPublicViews(id: string): Promise<Job | null> {
+    try {
+      const row = await this.prisma.job.update({
+        where: { id, status: 'ACTIVE' },
+        data: { viewsCount: { increment: 1 } },
+      });
+      return this.toDomain(row);
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') return null;
+      throw error;
+    }
+  }
+
   async findAll(filters: JobFilters): Promise<JobListResult> {
     const page = filters.page ?? 1
     const limit = filters.limit ?? 20
@@ -93,10 +106,8 @@ export class PrismaJobRepository implements IJobRepository {
   }
 
   async update(id: string, job: Job): Promise<Job> {
-    const row = await this.prisma.job.update({
-      where: { id },
-      data: this.toPersistence(job),
-    })
+    const { viewsCount, ...data } = this.toPersistence(job);
+    const row = await this.prisma.job.update({ where: { id }, data });
     return this.toDomain(row)
   }
 
@@ -129,7 +140,7 @@ export class PrismaJobRepository implements IJobRepository {
       workFormat: row.workFormat.toLowerCase(),
       city: row.city ?? undefined,
       salaryRange:
-        row.salaryMin || row.salaryMax
+        row.salaryMin != null || row.salaryMax != null
           ? new SalaryRange({
               min: row.salaryMin ?? undefined,
               max: row.salaryMax ?? undefined,

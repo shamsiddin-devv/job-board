@@ -66,9 +66,9 @@ import { ICacheRedisService } from 'src/domain/services/ICacheRedisService'
 
     {
       provide: SendOtpUseCase,
-      useFactory: (otpRepo: IOtpRepository, emailService: INodeMailerService) =>
-        new SendOtpUseCase(otpRepo, emailService),
-      inject: ['IOtpRepository', 'INodeMailerService'],
+      useFactory: (otpRepo: IOtpRepository, emailService: INodeMailerService, users: IUserRepository) =>
+        new SendOtpUseCase(otpRepo, emailService, users),
+      inject: ['IOtpRepository', 'INodeMailerService', 'IUserRepository'],
     },
 
     {
@@ -147,10 +147,9 @@ import { ICacheRedisService } from 'src/domain/services/ICacheRedisService'
       useFactory: (
         userRepo: IUserRepository,
         hashService: IHashService,
-        refreshTokenRepo: IRefreshTokenRepository,
         tokenService: ITokenService
-      ) => new ResetPasswordUseCase(userRepo, hashService, refreshTokenRepo, tokenService),
-      inject: ['IUserRepository', 'IHashService', 'IRefreshTokenRepository', 'ITokenService'],
+      ) => new ResetPasswordUseCase(userRepo, hashService, tokenService),
+      inject: ['IUserRepository', 'IHashService', 'ITokenService'],
     },
 
     {

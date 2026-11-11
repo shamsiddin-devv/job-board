@@ -1,0 +1,9 @@
+{$API_DOMAIN} {
+	encode zstd gzip
+	reverse_proxy backend:4000 {
+		transport http {
+			dial_timeout 3s
+			response_header_timeout 45s
+		}
+	}
+}

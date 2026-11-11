@@ -1,12 +1,21 @@
 import 'dotenv/config';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { ValidationPipe } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { Logger, ValidationPipe, type INestApplication } from '@nestjs/common';
 import cookieParser from 'cookie-parser';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
-async function bootstrap() {
+export async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  configureApp(app);
+  app.enableShutdownHooks();
+  await app.listen(app.get(ConfigService).getOrThrow<number>('PORT'), '0.0.0.0');
+}
+
+export function configureApp(app: INestApplication) {
+  const settings = app.get(ConfigService);
+  app.setGlobalPrefix('api');
   const config = new DocumentBuilder()
     .setTitle('JobBoard API')
     .setDescription('REST API documentation for JobBoard')
@@ -21,12 +30,10 @@ async function bootstrap() {
       'access-token',
     )
     .build();
-  const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api-docs', app, document, {
-    swaggerOptions: {
-      persistAuthorization: true,
-    },
-  });
+  if (settings.get('NODE_ENV') !== 'production') {
+    const document = SwaggerModule.createDocument(app, config);
+    SwaggerModule.setup('api-docs', app, document);
+  }
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
@@ -35,10 +42,10 @@ async function bootstrap() {
       transformOptions: { enableImplicitConversion: true },
     }),
   );
-  app.setGlobalPrefix('/api');
-  app.use(cookieParser());
+  app.use(cookieParser(process.env.ACCESS_TOKEN_SECRET));
+  app.getHttpAdapter().getInstance().disable('x-powered-by');
 
-  const allowedOrigins = (process.env.FRONTEND_URL ?? 'http://localhost:5173')
+  const allowedOrigins = (settings.getOrThrow<string>('FRONTEND_URL'))
     .split(',')
     .map((o) => o.trim())
     .filter(Boolean);
@@ -46,14 +53,19 @@ async function bootstrap() {
   app.enableCors({
     origin: (origin, callback) => {
       // Allow non-browser clients (no Origin header) and any localhost dev port.
-      if (!origin || allowedOrigins.includes(origin) || /^https?:\/\/localhost(:\d+)?$/.test(origin)) {
+      if (!origin || allowedOrigins.includes(origin) || (process.env.NODE_ENV !== 'production' && /^https?:\/\/localhost(:\d+)?$/.test(origin))) {
         return callback(null, true);
       }
-      return callback(new Error(`Origin ${origin} not allowed by CORS`), false);
+      return callback(null, false);
     },
     credentials: true,
   });
 
-  await app.listen(process.env.PORT ?? 3000);
 }
-bootstrap();
+
+if (require.main === module) {
+  void bootstrap().catch((error: unknown) => {
+    Logger.error(error instanceof Error ? error.message : 'Startup failed', 'Bootstrap');
+    process.exitCode = 1;
+  });
+}

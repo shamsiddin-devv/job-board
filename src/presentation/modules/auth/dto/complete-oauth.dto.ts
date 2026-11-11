@@ -1,32 +1,29 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsEmail, IsIn, IsOptional, IsString, IsUrl } from 'class-validator';
 
 export class CompleteOAuthDto {
-  @ApiProperty({ example: 'john@gmail.com' })
+  @ApiProperty({ enum: ['company', 'worker'] })
+  @IsIn(['company', 'worker'])
+  role: 'company' | 'worker';
+
+  // Existing clients can continue sending the display fields during rollout.
+  @ApiPropertyOptional()
+  @IsOptional()
   @IsEmail()
-  email: string;
+  email?: string;
 
-  @ApiProperty({ example: 'John Doe' })
+  @ApiPropertyOptional()
+  @IsOptional()
   @IsString()
-  fullName: string;
+  fullName?: string;
 
-  @ApiProperty({
-    example: 'https://avatar.com/image.png',
-    required: false,
-  })
+  @ApiPropertyOptional()
   @IsOptional()
   @IsUrl()
   avatarUrl?: string;
 
-  @ApiProperty({
-    enum: ['company', 'worker'],
-  })
-  @IsIn(['company', 'worker'])
-  role: 'company' | 'worker';
-
-  @ApiProperty({
-    enum: ['google', 'github'],
-  })
+  @ApiPropertyOptional({ enum: ['google', 'github'] })
+  @IsOptional()
   @IsIn(['google', 'github'])
-  provider: 'google' | 'github';
+  provider?: 'google' | 'github';
 }

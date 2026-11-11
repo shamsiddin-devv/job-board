@@ -10,6 +10,7 @@ export class SearchJobsUseCase {
   async execute(filters: JobFilters) {
     const safeFilters: JobFilters = {
       ...filters,
+      status: 'active',
       page: filters.page ?? DEFAULT_PAGE,
       limit: Math.min(filters.limit ?? DEFAULT_LIMIT, MAX_LIMIT),
     }

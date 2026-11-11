@@ -73,7 +73,7 @@ export class PrismaNotificationRepository implements INotificationRepository {
     return new Notification({
       id: row.id,
       userId: row.userId,
-      type: row.type,
+      type: row.type.toLowerCase(),
       message: row.message,
       isRead: row.isRead,
       createdAt: row.createdAt,
@@ -83,7 +83,7 @@ export class PrismaNotificationRepository implements INotificationRepository {
   private toPersistence(notification: Notification): any {
     return {
       userId: notification.userId,
-      type: notification.type,
+      type: notification.type.toUpperCase(),
       message: notification.message,
       isRead: notification.isRead,
     }

@@ -1,0 +1,48 @@
+name: WorkUZ CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-integration:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_DB: workuz_ci
+          POSTGRES_USER: workuz
+          POSTGRES_PASSWORD: workuz_ci
+        ports: ['5432:5432']
+        options: --health-cmd "pg_isready -U workuz -d workuz_ci" --health-interval 5s --health-timeout 3s --health-retries 10
+      redis:
+        image: redis:7
+        ports: ['6379:6379']
+        options: --health-cmd "redis-cli ping" --health-interval 5s --health-timeout 3s --health-retries 10
+    env:
+      DATABASE_URL: postgresql://workuz:workuz_ci@127.0.0.1:5432/workuz_ci
+      REDIS_URL: redis://127.0.0.1:6379/15
+      NODE_ENV: test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: cp .env.example .env
+      - run: npm ci
+      - run: npm audit --omit=dev --audit-level=high
+      - run: npm run db:generate
+      - run: npm run typecheck
+      - run: npm run build
+      - run: npm test -- --runInBand
+      - run: npm run db:migrate
+      - run: npm run test:e2e
+      - run: docker build --target runtime -t workuz:ci .
+      - run: cp .env.vps.example .env.vps
+      - run: docker compose --env-file .env.vps -f compose.vps.yml config --quiet

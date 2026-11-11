@@ -1,6 +1,6 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsInt, IsOptional, IsString, Min } from 'class-validator';
+import { IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
 
 export class SearchCompaniesQueryDto {
   @ApiPropertyOptional()
@@ -23,6 +23,7 @@ export class SearchCompaniesQueryDto {
   @Type(() => Number)
   @IsInt()
   @Min(1)
+  @Max(10000)
   page?: number;
 
   @ApiPropertyOptional({ default: 20 })
@@ -30,5 +31,6 @@ export class SearchCompaniesQueryDto {
   @Type(() => Number)
   @IsInt()
   @Min(1)
+  @Max(100)
   limit?: number;
 }

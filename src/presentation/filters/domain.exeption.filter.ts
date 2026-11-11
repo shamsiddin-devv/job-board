@@ -3,7 +3,9 @@ import {
   Catch,
   ArgumentsHost,
   HttpException,
+  Logger,
 } from '@nestjs/common'
+import { Prisma } from '@prisma/client'
 import { Response } from 'express'
 import { DomainError } from 'src/domain/errors/DomainError'
 
@@ -29,7 +31,17 @@ export class DomainExceptionFilter implements ExceptionFilter {
       )
     }
 
-    console.error('Unexpected error:', exception)
+    if (exception instanceof Prisma.PrismaClientKnownRequestError) {
+      if (exception.code === 'P2002') return response.status(409).json({ error: 'Resource already exists.' });
+      if (exception.code === 'P2025') return response.status(404).json({ error: 'Resource not found.' });
+    }
+
+    if (exception instanceof Error) {
+      const frames = exception.stack?.split('\n').filter((line) => line.startsWith('    at ')).join('\n');
+      Logger.error(exception.name, frames, 'HTTP');
+    } else {
+      Logger.error('Unknown error', 'HTTP');
+    }
     return response.status(500).json({
       error: 'A server error occurred.',
     })

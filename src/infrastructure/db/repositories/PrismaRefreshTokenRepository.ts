@@ -15,7 +15,7 @@ export class PrismaRefreshTokenRepository implements IRefreshTokenRepository {
 
   async findByUserId(userId: string): Promise<RefreshToken | null> {
     const userToken = await this.prismaService.refreshToken.findFirst({where: {userId}})
-    return this.toDomain(userToken);
+    return userToken ? this.toDomain(userToken) : null;
   };
 
   async updateManyByUserId(userId: string, isRevoked: boolean): Promise<void | null> {
@@ -41,6 +41,18 @@ export class PrismaRefreshTokenRepository implements IRefreshTokenRepository {
     });
     return this.toDomain(row);
   };
+
+  async rotate(oldId: string, replacement: RefreshToken): Promise<boolean> {
+    return this.prismaService.$transaction(async (tx) => {
+      const { count } = await tx.refreshToken.updateMany({
+        where: { id: oldId, isRevoked: false, expiresAt: { gt: new Date() } },
+        data: { isRevoked: true },
+      });
+      if (count !== 1) return false;
+      await tx.refreshToken.create({ data: this.toPersistence(replacement) });
+      return true;
+    });
+  }
 
   async update(tokenId: string, data: RefreshToken): Promise<RefreshToken> {
     const row = await this.prismaService.refreshToken.update({

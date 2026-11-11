@@ -23,11 +23,11 @@ export class OAuthLoginUseCase {
     if (!exist) {
       return {
         requiresRoleSelection: true,
-        profile: { email: dto.email, name: dto.fullName, avatarUrl: dto.avatarUrl }
+        profile: { email: dto.email, fullName: dto.fullName, avatarUrl: dto.avatarUrl }
       };
     };
 
-    if (exist.authProvider === 'local') throw new UnauthorizedError(AUTH_MESSAGES.REGISTERED_WITH_PROVIDER);
+    if (exist.authProvider !== dto.provider) throw new UnauthorizedError(AUTH_MESSAGES.REGISTERED_WITH_PROVIDER);
 
     if (!exist.isActive) throw new UnauthorizedError(AUTH_MESSAGES.ACCOUNT_INACTIVE);
 

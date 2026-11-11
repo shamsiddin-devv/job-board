@@ -9,7 +9,6 @@ import { RedisOtpRepository } from "./db/repositories/RedisOtpRepository";
 import { PrismaRefreshTokenRepository } from "./db/repositories/PrismaRefreshTokenRepository";
 import { PrismaSavedJobRepository } from "./db/repositories/PrismaSavedJobRepository";
 import { PrismaResumeRepository } from "./db/repositories/PrismaResumeRepository";
-import { CacheRedisService } from "./redis/redis.service";
 import { NodemailerService } from "./email/Nodemailer";
 import { BcryptHash } from "./auth/BcryptHash";
 import { CloudinaryService } from "./storage/cloudinary.service";
@@ -28,7 +27,6 @@ import { JsonWebToken } from "./auth/Jwt";
     {provide: 'ISavedJobRepository', useClass: PrismaSavedJobRepository},
     {provide: 'IOtpRepository', useClass: RedisOtpRepository},
     {provide: 'IRefreshTokenRepository', useClass: PrismaRefreshTokenRepository},
-    {provide: 'ICacheRedisService', useClass: CacheRedisService},
     {provide: 'INodeMailerService', useClass: NodemailerService},
     {provide: 'IHashService', useClass: BcryptHash},
     {provide: 'IStorageService', useClass: CloudinaryService},
@@ -38,7 +36,7 @@ import { JsonWebToken } from "./auth/Jwt";
     'IUserRepository', 'IJobRepository', 'ICompanyRepository',
     'IApplicationRepository', 'INotificationRepository', 'IResumeRepository',
     'ISavedJobRepository', 'IRefreshTokenRepository', 'IOtpRepository',
-    'ICacheRedisService', 'IHashService', 'ITokenService', 'INodeMailerService',
+    'IHashService', 'ITokenService', 'INodeMailerService',
     'IStorageService',
   ]
 })

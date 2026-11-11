@@ -7,6 +7,7 @@ export interface IRefreshTokenRepository {
   updateManyByUserId(userId: string, isRevoked: boolean): Promise<void | null>
   findAll(): Promise<RefreshToken[]>
   create(data: RefreshToken): Promise<RefreshToken>
+  rotate(oldId: string, replacement: RefreshToken): Promise<boolean>
   update(tokenId: string, data: RefreshToken): Promise<RefreshToken>
   delete(tokenId: string): Promise<void>
 };

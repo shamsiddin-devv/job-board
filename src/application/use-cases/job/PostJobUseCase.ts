@@ -37,7 +37,7 @@ export class PostJobUseCase {
     }
 
     const salaryRange =
-      dto.salaryMin || dto.salaryMax
+      dto.salaryMin != null || dto.salaryMax != null
         ? new SalaryRange({
             min: dto.salaryMin,
             max: dto.salaryMax,
@@ -48,12 +48,14 @@ export class PostJobUseCase {
     const newJob = new Job({
       userId: user.id!,
       title: dto.title,
+      description: dto.description,
+      city: dto.city,
       postType: dto.postType,
       jobType: dto.jobType,
       workFormat: dto.workFormat,
       salaryRange
     });
 
-    await this.jobRepo.create(newJob);
+    return this.jobRepo.create(newJob);
   }
 }

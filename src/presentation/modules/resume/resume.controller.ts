@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Get,
@@ -29,7 +30,7 @@ import { SearchResumesQueryDto } from './dto/search-resume.dto'
 import { CreateResumeDto } from './dto/create-resume.dto'
 import { UpdateResumeDto } from './dto/update-resume.dto'
 import { JwtAuthGuard } from 'src/presentation/guards/jwt-auth.guard'
-import { multerConfig } from 'src/infrastructure/upload/multer.config'
+import { multerConfig, hasAllowedFileSignature } from 'src/infrastructure/upload/multer.config'
 
 @ApiTags('Resumes')
 @Controller('resumes')
@@ -92,7 +93,8 @@ export class ResumeController {
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(FileInterceptor('file', multerConfig))
   async uploadFile(@UploadedFile() file: Express.Multer.File, @Req() req) {
-    return await this.uploadResumeFileUseCase.execute(req.user.sub, file.buffer)
+    if (!file || !hasAllowedFileSignature(file, 'application/pdf')) throw new BadRequestException('Invalid file file.');
+    return this.uploadResumeFileUseCase.execute(req.user.sub, file.buffer)
   }
 
   @ApiOperation({ summary: 'Ish qidiruvni to\'xtatish' })

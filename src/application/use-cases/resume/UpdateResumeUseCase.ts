@@ -12,9 +12,9 @@ export class UpdateResumeUseCase {
     if (!resume) throw new NotFoundError(RESUME_MESSAGES.RESUME_NOT_FOUND);
 
     const salaryRange =
-      dto.salaryMin !== undefined
+      (dto.salaryMin != null || (dto.currency != null && resume.salaryRange))
         ? new SalaryRange({
-            min: dto.salaryMin,
+            min: dto.salaryMin ?? resume.salaryRange?.min,
             currency: dto.currency ?? resume.salaryRange?.currency ?? 'UZS',
           })
         : undefined;

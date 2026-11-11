@@ -1,7 +1,6 @@
 import { LoginDto } from 'src/application/dto/auth/LoginDto';
 import { AUTH_MESSAGES } from 'src/domain/constants/message';
 import { RefreshToken } from 'src/domain/entities/RefreshToken';
-import { NotFoundError } from 'src/domain/errors/NotFoundError';
 import { UnauthorizedError } from 'src/domain/errors/UnauthorizedError';
 import { IRefreshTokenRepository } from 'src/domain/repositories/IRefreshTokenRepository';
 import { IUserRepository } from 'src/domain/repositories/IUserRepository';
@@ -21,14 +20,18 @@ export class LoginUseCase {
     const verifyEmail = new Email(dto.email);
 
     const exist = await this.userRepo.findByEmail(verifyEmail.toString());
-    if(!exist) throw new NotFoundError(AUTH_MESSAGES.USER_NOT_FOUND);
+    if (!exist) throw new UnauthorizedError(AUTH_MESSAGES.INVALID_EMAIL_OR_PASSWORD);
 
     if (exist.isOAuthUser()) throw new UnauthorizedError(AUTH_MESSAGES.REGISTERED(exist.authProvider))
 
     const passwordHash = await this.userRepo.findPasswordHashByUserId(exist.id!);
 
-    const comparePassword = await this.hashService.compare(dto.password, passwordHash!);
+    const comparePassword = passwordHash && await this.hashService.compare(dto.password, passwordHash);
     if(!comparePassword) throw new UnauthorizedError(AUTH_MESSAGES.INVALID_EMAIL_OR_PASSWORD);
+
+    if (!exist.isActive || !exist.isVerified) {
+      throw new UnauthorizedError(AUTH_MESSAGES.ACCOUNT_INACTIVE);
+    }
 
     const payload = {
       sub: exist.id!,

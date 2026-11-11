@@ -15,6 +15,7 @@ import {
   ApiResponse,
   ApiBearerAuth,
 } from '@nestjs/swagger'
+import { PaginationDto } from '../../dto/pagination.dto';
 import { JwtAuthGuard } from '../../guards/jwt-auth.guard'
 import { ApplyToJobUseCase } from 'src/application/use-cases/application/ApplyToJobUseCase'
 import { AcceptApplicationUseCase } from 'src/application/use-cases/application/AcceptApplicationUseCase'
@@ -75,8 +76,7 @@ export class ApplicationController {
   async getApplicants(
     @Param('jobId') jobId: string,
     @Req() req,
-    @Query('page') page?: number,
-    @Query('limit') limit?: number,
+    @Query() { page, limit }: PaginationDto,
   ) {
     return await this.getApplicantsUseCase.execute(
       jobId,
@@ -92,8 +92,7 @@ export class ApplicationController {
   @UseGuards(JwtAuthGuard)
   async getMyApplications(
     @Req() req,
-    @Query('page') page?: number,
-    @Query('limit') limit?: number,
+    @Query() { page, limit }: PaginationDto,
   ) {
     return await this.getMyApplicationsUseCase.execute(
       req.user.sub,
@@ -108,8 +107,7 @@ export class ApplicationController {
   @UseGuards(JwtAuthGuard)
   async getCompanyApplicants(
     @Req() req,
-    @Query('page') page?: number,
-    @Query('limit') limit?: number,
+    @Query() { page, limit }: PaginationDto,
   ) {
     return await this.getCompanyApplicantsUseCase.execute(
       req.user.sub,

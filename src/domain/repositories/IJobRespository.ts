@@ -27,6 +27,7 @@ export interface JobListResult {
 
 export interface IJobRepository {
   findById(id: string): Promise<Job | null>
+  incrementPublicViews(id: string): Promise<Job | null>
   findAll(filters: JobFilters): Promise<JobListResult>
   create(job: Job): Promise<Job>
   update(id: string, job: Job): Promise<Job>

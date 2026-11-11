@@ -1,12 +1,13 @@
 import { Injectable } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import { Prisma, type Resume as ResumeRow } from '@prisma/client';
+import type { CurrencyType } from 'src/domain/entities/Job';
 import { PrismaService } from '../prisma/prisma.service';
 import {
   IResumeRepository,
   ResumeFilters,
   ResumeListResult,
 } from 'src/domain/repositories/IResumeRepository';
-import { Resume } from 'src/domain/entities/Resume';
+import { Resume, type ResumeStatusType } from 'src/domain/entities/Resume';
 import { SalaryRange } from 'src/domain/value-objects/Salary';
 
 @Injectable()
@@ -84,7 +85,7 @@ export class PrismaResumeRepository implements IResumeRepository {
     await this.prisma.resume.delete({ where: { id } });
   }
 
-  private toDomain(row: any): Resume {
+  private toDomain(row: ResumeRow): Resume {
     return new Resume({
       id: row.id,
       userId: row.userId,
@@ -92,30 +93,28 @@ export class PrismaResumeRepository implements IResumeRepository {
       summary: row.summary ?? undefined,
       city: row.city ?? undefined,
       salaryRange:
-        row.salaryMin || row.salaryMax
+        row.salaryMin != null
           ? new SalaryRange({
               min: row.salaryMin ?? undefined,
-              max: row.salaryMax ?? undefined,
-              currency: row.currency,
+              currency: row.currency as CurrencyType,
             })
           : undefined,
       fileUrl: row.fileUrl ?? undefined,
-      status: row.status.toLowerCase(),
+      status: row.status.toLowerCase() as ResumeStatusType,
       createdAt: row.createdAt,
     });
   }
 
-  private toPersistence(resume: Resume): any {
+  private toPersistence(resume: Resume): Prisma.ResumeUncheckedCreateInput {
     return {
       userId: resume.userId,
       title: resume.title,
       summary: resume.summary,
       city: resume.city,
       salaryMin: resume.salaryRange?.min ?? null,
-      salaryMax: resume.salaryRange?.max ?? null,
       currency: resume.salaryRange?.currency ?? 'UZS',
       fileUrl: resume.fileUrl,
-      status: resume.status.toUpperCase(),
+      status: resume.status.toUpperCase() as Prisma.ResumeUncheckedCreateInput['status'],
     };
   }
 }

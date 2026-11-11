@@ -1,5 +1,6 @@
 import { AUTH_MESSAGES } from 'src/domain/constants/message';
-import { OtpCode } from 'src/domain/entities/OtpCode';
+import type { IUserRepository } from 'src/domain/repositories/IUserRepository';
+import { OtpCode, type OtpType } from 'src/domain/entities/OtpCode';
 import { IOtpRepository } from 'src/domain/repositories/IOtpRepository';
 import { INodeMailerService } from 'src/domain/services/IEmailService';
 import { Email } from 'src/domain/value-objects/Email';
@@ -8,14 +9,21 @@ export class SendOtpUseCase {
   constructor(
     private readonly otpRepo: IOtpRepository,
     private readonly nodemailerService: INodeMailerService,
+    private readonly users: IUserRepository,
   ) {}
 
-  async execute(emailStr: string) {
+  async resendRegistration(emailStr: string) {
+    const user = await this.users.findByEmail(new Email(emailStr).toString());
+    if (user?.isActive && !user.isVerified && !user.isOAuthUser()) return this.execute(emailStr);
+    return { message: AUTH_MESSAGES.OTP_SENT };
+  }
+
+  async execute(emailStr: string, purpose: OtpType = 'email_verify') {
     const email = new Email(emailStr);
 
     const code = OtpCode.generateCode();
 
-    await this.otpRepo.create(email.toString(), code)
+    if (!await this.otpRepo.create(email.toString(), purpose, code)) return { message: AUTH_MESSAGES.OTP_SENT };
 
     await this.nodemailerService.send({
       to: email.toString(),

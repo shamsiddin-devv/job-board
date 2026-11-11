@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Get,
@@ -33,7 +34,7 @@ import { UpdateCompanyDto } from './dto/update.dto'
 import { SearchCompaniesQueryDto } from './dto/search-company.dto'
 import { RolesGuard } from 'src/presentation/guards/roles.guard'
 import { Roles } from 'src/presentation/decorators/roles.decorator'
-import { multerConfig } from 'src/infrastructure/upload/multer.config'
+import { multerConfig, hasAllowedFileSignature } from 'src/infrastructure/upload/multer.config'
 
 
 @ApiTags('Companies')
@@ -106,7 +107,8 @@ export class CompanyController {
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(FileInterceptor('file', multerConfig))
   async uploadLogo(@UploadedFile() file: Express.Multer.File, @Req() req) {
-    return await this.uploadCompanyLogoUseCase.execute(req.user.sub, file.buffer)
+    if (!file || !hasAllowedFileSignature(file, 'image')) throw new BadRequestException('Invalid logo file.');
+    return this.uploadCompanyLogoUseCase.execute(req.user.sub, file.buffer)
   }
 
   @ApiOperation({ summary: 'Kompaniyani tasdiqlash (faqat ADMIN)' })

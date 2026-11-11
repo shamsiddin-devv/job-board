@@ -1,5 +1,6 @@
+import { Max } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsOptional, IsString, IsNumber, IsEnum, Min } from 'class-validator';
+import { IsOptional, IsString, IsInt, IsEnum, Min } from 'class-validator';
 
 export class CreateResumeDto {
   @ApiProperty({
@@ -30,8 +31,9 @@ export class CreateResumeDto {
     description: 'Expected minimum salary.',
   })
   @IsOptional()
-  @IsNumber()
+  @IsInt()
   @Min(0)
+  @Max(2147483647)
   salaryMin?: number;
 
   @ApiProperty({

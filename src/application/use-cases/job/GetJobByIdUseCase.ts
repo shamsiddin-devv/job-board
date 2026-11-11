@@ -8,12 +8,9 @@ export class GetByIdUseCase {
   ) {}
 
   async execute(jobId: string) {
-    const job = await this.jobRepo.findById(jobId);
+    const job = await this.jobRepo.incrementPublicViews(jobId);
     if (!job) throw new NotFoundError(JOB_MESSAGES.JOB_NOT_FOUND);
     
-    job.incrementViews();
-    await this.jobRepo.update(jobId, job);
-
     return {
       id: job.id,
       userId: job.userId,

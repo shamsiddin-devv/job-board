@@ -22,8 +22,8 @@ import { DeleteJobUseCase } from 'src/application/use-cases/job/DeleteJobUseCase
         userRepo: IUserRepository,
         companyRepo: ICompanyRepository,
         jobRepo: IJobRepository,
-      ) => new PostJobUseCase(userRepo, companyRepo, jobRepo,),
-      inject: ['IJobRepository', 'IUserRepository', 'ICompanyRepository'],
+      ) => new PostJobUseCase(userRepo, companyRepo, jobRepo),
+      inject: ['IUserRepository', 'ICompanyRepository', 'IJobRepository'],
     },
     {
       provide: UpdateJobUseCase,

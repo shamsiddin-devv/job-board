@@ -1,3 +1,4 @@
+import { IsInt as IsPageInteger, Min as MinPage, Max as MaxPage } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsNumber, IsOptional, IsString } from 'class-validator';
 
@@ -31,7 +32,9 @@ export class SearchResumesQueryDto {
     description: 'Page number.',
   })
   @IsOptional()
-  @IsNumber()
+  @IsPageInteger()
+  @MinPage(1)
+  @MaxPage(10000)
   page?: number;
 
   @ApiPropertyOptional({
@@ -39,6 +42,8 @@ export class SearchResumesQueryDto {
     description: 'Items per page.',
   })
   @IsOptional()
-  @IsNumber()
+  @IsPageInteger()
+  @MinPage(1)
+  @MaxPage(100)
   limit?: number;
 }

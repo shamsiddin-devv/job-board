@@ -1,7 +1,6 @@
 import { Module } from "@nestjs/common";
 import {RedisModule as IoRedisModule} from '@nestjs-modules/ioredis';
 import { ConfigModule, ConfigService } from "@nestjs/config";
-import { RepositoriesModule } from "../repositories.module";
 import { CacheRedisService } from "./redis.service";
 
 @Module({
@@ -11,10 +10,10 @@ import { CacheRedisService } from "./redis.service";
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
         type: 'single',
-        url: config.get('REDIS_URL')
+        url: config.getOrThrow<string>('REDIS_URL'),
+        options: { connectTimeout: 2000, commandTimeout: 3000, maxRetriesPerRequest: 1 }
       })
     }),
-    RepositoriesModule
   ],
   providers: [CacheRedisService],
   exports: [CacheRedisService]

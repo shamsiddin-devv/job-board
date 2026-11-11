@@ -123,8 +123,8 @@ export class PrismaSavedJobRepository implements ISavedJobRepository {
     return this.toDomain(row);
   }
 
-  async delete(savedJobId: string): Promise<void> {
-    await this.prismaService.savedJob.delete({ where: { id: savedJobId } });
+  async delete(userId: string, jobId: string): Promise<void> {
+    await this.prismaService.savedJob.delete({ where: { userId_jobId: { userId, jobId } } });
   }
 
   private toDomain(savedJob: any): SavedJob {

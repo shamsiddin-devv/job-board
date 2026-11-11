@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { IUserRepository } from 'src/domain/repositories/IUserRepository';
 import { VerifyOtpUseCase } from './VerifyOtpUseCase';
 import { ITokenService } from 'src/domain/services/ITokenService';
@@ -17,13 +18,16 @@ export class VerifyResetPasswordOtpUseCase {
     const email = new Email(dto.emailStr);
 
     const user = await this.userRepo.findByEmail(email.toString());
-    if(!user) throw new UnauthorizedError(AUTH_MESSAGES.INVALID_VERIFICATION);
+    if (!user?.isActive || !user.isVerified || user.isOAuthUser()) throw new UnauthorizedError(AUTH_MESSAGES.INVALID_VERIFICATION);
 
-    await this.verifyOtpUseCase.execute(dto);
+    const hash = await this.userRepo.findPasswordHashByUserId(user.id!);
+    if (!hash) throw new UnauthorizedError(AUTH_MESSAGES.INVALID_VERIFICATION);
+    await this.verifyOtpUseCase.execute(dto, 'reset_password');
 
     const payload = {
       sub: user.id!,
       email: email.toString(),
+      credentialVersion: createHash('sha256').update(hash).digest('hex'),
     };
     const resetToken = await this.tokenService.signResetToken(payload);
 

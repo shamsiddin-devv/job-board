@@ -31,26 +31,25 @@ export class RefreshTokenUseCase {
     if(existToken.userId !== oldPayload.sub) throw new UnauthorizedError(AUTH_MESSAGES.REFRESH_TOKEN_INVALID);
     
     const user = await this.userRepo.findById(existToken.userId);
-    if(!user!.isActive) throw new UnauthorizedError(USER_MESSAGES.USER_INACTIVE);
-
-    existToken.revoke();
-    await this.refreshTokenRepo.update(existToken.id!, existToken);
+    if (!user?.isActive || !user.isVerified) throw new UnauthorizedError(USER_MESSAGES.USER_INACTIVE);
     
     const newPayload = {
-      sub: user!.id!,
-      email: user!.email.toString(),
-      role: user!.role
+      sub: user.id!,
+      email: user.email.toString(),
+      role: user.role
     };
     const newAccessToken = this.tokenService.signAccessToken(newPayload);
     const newRefreshToken = this.tokenService.signRefreshToken(newPayload);
 
     const refreshRow = new RefreshToken({
-      userId: user!.id!,
+      userId: user.id!,
       token: newRefreshToken,
       expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
     })
 
-    await this.refreshTokenRepo.create(refreshRow);
+    if (!await this.refreshTokenRepo.rotate(existToken.id!, refreshRow)) {
+      throw new UnauthorizedError(AUTH_MESSAGES.REFRESH_TOKEN_INVALID);
+    }
     return {
       message: AUTH_MESSAGES.REFRESH_SUCCESS,
       newAccessToken,

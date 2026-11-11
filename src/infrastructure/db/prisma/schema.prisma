@@ -53,6 +53,8 @@ enum JobType {
 
 enum NotificationType {
   APPLICATION_ACCEPTED
+  APPLICATION_REJECTED
+  COMPANY_VERIFIED
   NEW_APPLICANT
   JOB_EXPIRING
 }
@@ -98,6 +100,8 @@ model RefreshToken {
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@index([userId, isRevoked])
+  @@index([expiresAt])
   @@map("refresh_tokens")
 }
 
@@ -163,6 +167,8 @@ model Job {
   jobCategories JobCategory[]
   savedBy       SavedJob[]
 
+  @@index([status, createdAt])
+  @@index([userId, createdAt])
   @@map("jobs")
 }
 
@@ -196,6 +202,7 @@ model Application {
   applicant User @relation(fields: [applicantId], references: [id], onDelete: Cascade)
 
   @@unique([jobId, applicantId])
+  @@index([applicantId, appliedAt])
   @@map("applications")
 }
 
@@ -217,6 +224,8 @@ model Resume {
   // Relations
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@index([userId])
+  @@index([status, createdAt])
   @@map("resumes")
 }
 
@@ -249,5 +258,6 @@ model Notification {
   // Relations
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@index([userId, createdAt])
   @@map("notifications")
 }

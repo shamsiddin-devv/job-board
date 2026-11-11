@@ -1,61 +1,50 @@
-version: '3.8'
-
 services:
-  # ============ BACKEND ============
   backend:
     build:
       context: .
-      dockerfile: Dockerfile
+      target: runtime
     ports:
-      - '4000:4000'
-    env_file:
-      - .env.docker
+      - '127.0.0.1:4000:4000'
+    env_file: .env.docker
+    environment:
+      NODE_ENV: development
+      PORT: 4000
+      DATABASE_URL: postgresql://workuz:workuz_dev_only@postgres:5432/workuz
+      REDIS_URL: redis://redis:6379
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+  migrate:
+    build:
+      context: .
+      target: migrate
+    environment:
+      DATABASE_URL: postgresql://workuz:workuz_dev_only@postgres:5432/workuz
     depends_on:
       postgres:
         condition: service_healthy
-      redis:
-        condition: service_healthy
-    networks:
-      - jobboard-network
-
-  # ============ POSTGRESQL ============
   postgres:
-    image: postgres:16-alpine
-    ports:
-      - '5432:5432'
+    image: postgres:18-alpine
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: jobboard
+      POSTGRES_USER: workuz
+      POSTGRES_PASSWORD: workuz_dev_only
+      POSTGRES_DB: workuz
     volumes:
-      - postgres-data:/var/lib/postgresql/data
+      - postgres-data:/var/lib/postgresql
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U postgres']
-      interval: 5s
-      timeout: 5s
-      retries: 5
-    networks:
-      - jobboard-network
-
-  # ============ REDIS ============
+      test: ['CMD', 'pg_isready', '-U', 'workuz', '-d', 'workuz']
+      interval: 3s
+      timeout: 3s
+      retries: 15
   redis:
     image: redis:7-alpine
-    ports:
-      - '6379:6379'
-    volumes:
-      - redis-data:/data
     healthcheck:
       test: ['CMD', 'redis-cli', 'ping']
-      interval: 5s
-      timeout: 5s
-      retries: 5
-    networks:
-      - jobboard-network
+      interval: 3s
+      timeout: 3s
+      retries: 15
 
 volumes:
   postgres-data:
-  redis-data:
-
-networks:
-  jobboard-network:
-    driver: bridge

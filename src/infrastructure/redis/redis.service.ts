@@ -1,11 +1,19 @@
 import { InjectRedis } from "@nestjs-modules/ioredis";
-import { Injectable } from "@nestjs/common";
+import { Injectable, Logger } from "@nestjs/common";
 import Redis from "ioredis";
 import { ICacheRedisService } from "src/domain/services/ICacheRedisService";
 
 @Injectable()
 export class CacheRedisService implements ICacheRedisService {
-  constructor(@InjectRedis() private readonly redis: Redis) {}
+  constructor(@InjectRedis() private readonly redis: Redis) {
+    this.redis.on('error', (error: Error) => {
+      Logger.warn(error.name, 'Redis');
+    });
+  }
+
+  ping(): Promise<string> {
+    return this.redis.ping();
+  }
 
   async get<T>(key: string): Promise<T | null> {
     const data = await this.redis.get(key);

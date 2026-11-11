@@ -1,7 +1,8 @@
+import { Max } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsEnum,
-  IsNumber,
+  IsInt,
   IsOptional,
   IsString,
   Min,
@@ -60,8 +61,9 @@ export class PostJobDto {
     description: 'Minimum salary.',
   })
   @IsOptional()
-  @IsNumber()
+  @IsInt()
   @Min(0)
+  @Max(2147483647)
   salaryMin?: number;
 
   @ApiPropertyOptional({
@@ -69,8 +71,9 @@ export class PostJobDto {
     description: 'Maximum salary.',
   })
   @IsOptional()
-  @IsNumber()
+  @IsInt()
   @Min(0)
+  @Max(2147483647)
   salaryMax?: number;
 
   @ApiProperty({

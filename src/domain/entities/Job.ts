@@ -28,7 +28,7 @@ export class Job {
   private _viewsCount: number;
 
   constructor(private props: IJobProps) {
-    if (!props.title && props.title.trim() === '') {
+    if (!props.title?.trim()) {
       throw new BadRequestError(JOB_MESSAGES.TITLE_REQUIRED);
     }
 
@@ -43,6 +43,7 @@ export class Job {
   update(
     props: Partial<{
       title: string;
+      description: string;
       salaryRange: SalaryRange;
       city: string;
       jobType: JobType;
@@ -50,14 +51,16 @@ export class Job {
     }>,
   ): void {
     if(props.title !== undefined) {
-      if(!props.title.trim()) throw new BadRequestError(JOB_MESSAGES.TITLE_MUST_BE_EMPTY);
+      if(!props.title?.trim()) throw new BadRequestError(JOB_MESSAGES.TITLE_MUST_BE_EMPTY);
       this.props.title = props.title
     };
     if(props.salaryRange !== undefined) this.props.salaryRange = props.salaryRange;
     if(props.city !== undefined) {
-      if(!props.city.trim()) throw new BadRequestError(JOB_MESSAGES.CITY_MUST_BE_EMPTY);
+      if(!props.city?.trim()) throw new BadRequestError(JOB_MESSAGES.CITY_MUST_BE_EMPTY);
       this.props.city = props.city;
     };
+    if (props.description !== undefined) this.props.description = props.description;
+    if (props.jobType !== undefined) this.props.jobType = props.jobType;
     if(props.workFormat !== undefined) this.props.workFormat = props.workFormat;
   };
 

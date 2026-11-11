@@ -1,3 +1,4 @@
+import type { Notification } from '../entities/Notification'
 import { Application, IApplicationStatus } from '../entities/Application'
 
 export interface ApplicationFilters {
@@ -49,6 +50,6 @@ export interface IApplicationRepository {
   findEnrichedByApplicant(applicantId: string, page?: number, limit?: number): Promise<EnrichedApplicationListResult>
   findEnrichedByOwner(ownerUserId: string, page?: number, limit?: number): Promise<EnrichedApplicationListResult>
   create(application: Application): Promise<Application>
-  update(id: string, application: Application): Promise<Application>
+  decide(id: string, application: Application, notification: Notification): Promise<Application>
   delete(id: string): Promise<void>
 }

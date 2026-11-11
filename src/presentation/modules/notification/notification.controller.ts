@@ -8,6 +8,7 @@ import {
 import { GetNotificationsUseCase } from 'src/application/use-cases/notification/GetNotificationsUseCase'
 import { MarkAllNotificationsReadUseCase } from 'src/application/use-cases/notification/MarkAllNotificationsReadUseCase'
 import { MarkNotificationReadUseCase } from 'src/application/use-cases/notification/MarkNotificationReadUseCase'
+import { PaginationDto } from '../../dto/pagination.dto';
 import { JwtAuthGuard } from 'src/presentation/guards/jwt-auth.guard'
 
 @ApiTags('Notifications')
@@ -26,8 +27,7 @@ export class NotificationController {
   @Get()
   async getAll(
     @Req() req,
-    @Query('page') page?: number,
-    @Query('limit') limit?: number,
+    @Query() { page, limit }: PaginationDto,
   ) {
     return await this.getNotificationsUseCase.execute(req.user.sub, page, limit)
   }
