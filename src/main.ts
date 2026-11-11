@@ -2,18 +2,20 @@ import 'dotenv/config';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ConfigService } from '@nestjs/config';
-import { Logger, ValidationPipe, type INestApplication } from '@nestjs/common';
+import { Logger, ValidationPipe } from '@nestjs/common';
 import cookieParser from 'cookie-parser';
+import type { NestExpressApplication } from '@nestjs/platform-express';
+import { mountFrontend } from './presentation/frontend/mount-frontend';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 export async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
   configureApp(app);
   app.enableShutdownHooks();
   await app.listen(app.get(ConfigService).getOrThrow<number>('PORT'), '0.0.0.0');
 }
 
-export function configureApp(app: INestApplication) {
+export function configureApp(app: NestExpressApplication) {
   const settings = app.get(ConfigService);
   app.setGlobalPrefix('api');
   const config = new DocumentBuilder()
@@ -61,6 +63,7 @@ export function configureApp(app: INestApplication) {
     credentials: true,
   });
 
+  mountFrontend(app);
 }
 
 if (require.main === module) {
